@@ -113,7 +113,7 @@
     @apply border-border;
   }
 
-  /* Cream everywhere, including overscroll and areas outside the app column. */
+  /* Cream on phones, where the column is the whole screen. */
   html {
     background-color: hsl(var(--cream));
   }
@@ -126,6 +126,14 @@
     min-height: 100dvh;
     /* Readex Pro has no italic; don't let browsers fake one. */
     font-synthesis-style: none;
+  }
+
+  /* Wider than the 430px column: the column is a card on a blush page. */
+  @media (min-width: 431px) {
+    html,
+    body {
+      background-color: hsl(var(--blush));
+    }
   }
 
   #root {

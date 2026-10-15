@@ -111,7 +111,7 @@ Implementation notes:
 - Prefer token classes (`bg-maroon`, `text-clay`, `font-arabic`) over hardcoded hex in new or restyled code.
 - Fonts are self-hosted in `public/fonts` and declared with `@font-face` in `src/index.css`; never load fonts from Google or another third-party CDN. `font-display` and `font-body` are both Readex Pro; `font-arabic` is Aref Ruqaa, subset to the سجى wordmark (U+062C, U+0633, U+0649).
 - Never put white text on coral.
-- Every screen renders inside `src/components/layout/ScreenFrame.tsx`: a centred column, max `430px` wide (full width on phones), at least `100dvh` tall, on a cream `html`/`body`. Corner artwork is positioned at the column's corners, with a reserved band so it never overlaps content.
+- Every screen renders inside the app column (`src/components/layout/column.ts`, used by `ScreenFrame.tsx` and `Welcome.tsx`): centred, max `430px` wide, at least `100dvh` tall. On phones it is the whole cream screen; wider than 430px it is a card (24px radius, 1px `#DECFCA` border, soft shadow) on a blush page. Artwork is positioned relative to the column and clipped at its edges, with reserved space so it never sits under text, inputs or pills. Home uses `home-art-top`/`home-art-bottom`; other screens use the two corner pieces; Welcome uses its own 390x844 art layer.
 - Primary buttons and feeling pills: pill shape.
 - Decorative artwork stays at screen edges, never behind text, inputs or pills, and all motion is disabled under `prefers-reduced-motion`.
 - Artwork lives in `public/art/` (`webp/` preferred, `svg/` fallback, `brand/` for icons and the wordmark). Render it with `src/components/art/ArtImage.tsx`, which is decorative (`aria-hidden`, no pointer events).
