@@ -154,7 +154,7 @@ export default function HomeScreen({ onResponse }: Props) {
         type="button"
         onClick={submit}
         disabled={!canSubmit}
-        className="mt-11 h-14 w-full rounded-[28px] bg-maroon text-[17px] font-semibold text-cream transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-11 h-14 w-full rounded-[28px] bg-maroon text-[17px] font-semibold text-cream transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-[0.55]"
       >
         {loading ? (
           <span className="animate-pulse-soft">Reflecting...</span>
