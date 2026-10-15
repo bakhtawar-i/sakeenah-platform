@@ -95,33 +95,24 @@
 }
 
 @layer components {
+  /* Feeling pill: plain white with a thin border; maroon with cream text when selected. */
   .chip {
-    @apply rounded-full font-medium cursor-pointer select-none;
+    @apply rounded-full font-medium cursor-pointer select-none border border-hairline bg-white text-ink transition-colors;
     padding: 7px 16px;
     font-size: 12.5px;
-    background: #FFFFFF;
-    border: 0.5px solid #E8D5C8;
-    color: #2C1810;
-    border-radius: 100px;
-    transition: all 0.2s ease;
   }
 
   .chip:hover {
-    background: #F5E0DC;
+    @apply border-clay;
   }
 
-  .chip-active {
-    color: white !important;
-    border-color: transparent;
-    box-shadow: 0 2px 10px rgba(193, 124, 116, 0.35);
+  .chip:focus-visible {
+    @apply outline-none ring-2 ring-maroon ring-offset-2 ring-offset-cream;
   }
 
-  .chip-active-rose {
-    background: #C17C74 !important;
-  }
-
-  .chip-active-terracotta {
-    background: #C4714A !important;
+  .chip-active,
+  .chip-active:hover {
+    @apply border-maroon bg-maroon text-cream;
   }
 }
 
