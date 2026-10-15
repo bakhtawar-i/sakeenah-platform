@@ -1,52 +1,62 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Fonts (Readex Pro, Aref Ruqaa) are loaded in index.html. Palette: see DESIGN.md. */
 
 @layer base {
   :root {
-    --background: 24 58% 97%;
-    --foreground: 18 45% 13%;
+    /* Sajaa v3 palette */
+    --ink: 356 34.9% 16.9%;            /* #3A1C1E */
+    --cream: 28 100% 97.1%;            /* #FFF7F0 */
+    --maroon: 357.7 40.9% 37.8%;       /* #88393C */
+    --clay: 355.1 17.9% 40.6%;         /* #7A5558 */
+    --clay-deep: 357.1 23.7% 33.9%;    /* #6B4244 */
+    --turquoise: 179.3 46.5% 66.3%;    /* #81D1D0 */
+    --mint: 162.4 67.4% 83.1%;         /* #B7F1E0 */
+    --coral: 17.5 73.6% 64.3%;         /* #E78861 - never white text on coral */
+    --blush: 13.5 79.5% 92.4%;         /* #FBE3DC */
+    --bloom-magenta: 335.3 61.4% 48.8%; /* #C9306F */
+    --bloom-pink: 324 60.6% 61.2%;     /* #D860A8 */
+    --bloom-red: 349.1 63.9% 48.8%;    /* #CC2D4A */
+    --bloom-orange: 10.3 86.2% 62.9%;  /* #F26B4F */
+    --hairline: 15 23.3% 83.1%;        /* #DECFCA - thin borders, derived from clay on cream */
 
-    --card: 24 100% 98%;
-    --card-foreground: 18 45% 13%;
+    /* shadcn semantic tokens */
+    --background: var(--cream);
+    --foreground: var(--ink);
 
-    --popover: 24 58% 97%;
-    --popover-foreground: 18 45% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: var(--ink);
 
-    --primary: 4 33% 56%;
-    --primary-foreground: 0 0% 100%;
+    --popover: var(--cream);
+    --popover-foreground: var(--ink);
 
-    --secondary: 24 50% 95%;
-    --secondary-foreground: 18 45% 13%;
+    --primary: var(--maroon);
+    --primary-foreground: var(--cream);
 
-    --muted: 24 30% 92%;
-    --muted-foreground: 18 45% 13% / 0.45;
+    --secondary: var(--blush);
+    --secondary-foreground: var(--ink);
 
-    --accent: 4 33% 56%;
-    --accent-foreground: 0 0% 100%;
+    --muted: var(--blush);
+    --muted-foreground: var(--clay);
+
+    --accent: var(--blush);
+    --accent-foreground: var(--ink);
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 20 36% 85%;
-    --input: 20 36% 85%;
-    --ring: 4 33% 56%;
-    --border-light: 20 42% 89%;
+    --border: var(--hairline);
+    --input: var(--hairline);
+    --ring: var(--maroon);
+    --border-light: var(--hairline);
 
     --radius: 18px;
 
-    --font-display: 'Cormorant Garamond', serif;
-    --font-body: 'Lora', serif;
-
-    --rose: 4 33% 56%;
-    --rose-deep: 4 37% 50%;
-    --rose-pale: 6 62% 91%;
-    --terracotta: 20 47% 53%;
-    --terracotta-deep: 20 50% 44%;
-    --gold: 38 40% 61%;
+    --font-display: 'Readex Pro', system-ui, sans-serif;
+    --font-body: 'Readex Pro', system-ui, sans-serif;
+    --font-arabic: 'Aref Ruqaa', serif;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -65,12 +75,13 @@
   }
 
   body {
-    @apply text-foreground;
+    @apply text-foreground bg-background;
     font-family: var(--font-body);
     font-size: 15px;
     line-height: 1.85;
-    background: #FDF6F0;
     min-height: 100vh;
+    /* Readex Pro has no italic; don't let browsers fake one. */
+    font-synthesis-style: none;
   }
 
   #root {

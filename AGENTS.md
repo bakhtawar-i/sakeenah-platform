@@ -31,8 +31,8 @@ When resuming work, start with its `Resume Here` section.
 
 ## UI Constraints
 
-- Preserve the established Sajaa visual identity.
-- Use Cormorant Garamond for display text and Lora for body text.
+- Follow `DESIGN.md` for the Sajaa visual identity.
+- Use Readex Pro for Latin text and Aref Ruqaa only for the Arabic wordmark.
 - Design mobile-first around a maximum content width of `420px`.
 - Do not modify `src/components/ui/` unless explicitly requested.
 
