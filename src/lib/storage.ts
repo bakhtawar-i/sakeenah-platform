@@ -15,7 +15,9 @@ export interface JournalEntry {
 }
 
 const ENTRIES_KEY = "sakeena_entries";
-const ONBOARDING_KEY = "sakeena_onboarding_done";
+// v3 Welcome flag. A new key so existing users see the v3 Welcome once; the
+// older "sakeena_onboarding_done" key is left untouched.
+const WELCOME_KEY = "sajaa_onboarding_v3";
 
 export function getEntries(): JournalEntry[] {
   try {
@@ -32,10 +34,18 @@ export function saveEntry(entry: JournalEntry) {
   localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
 }
 
-export function isOnboardingDone(): boolean {
-  return localStorage.getItem(ONBOARDING_KEY) === "true";
+export function isWelcomeSeen(): boolean {
+  try {
+    return localStorage.getItem(WELCOME_KEY) === "true";
+  } catch {
+    return false;
+  }
 }
 
-export function completeOnboarding() {
-  localStorage.setItem(ONBOARDING_KEY, "true");
+export function markWelcomeSeen() {
+  try {
+    localStorage.setItem(WELCOME_KEY, "true");
+  } catch {
+    // Storage unavailable (e.g. private mode); the Welcome may show again next visit.
+  }
 }

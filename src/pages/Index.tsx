@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { isOnboardingDone, type JournalEntry } from "@/lib/storage";
-import Onboarding from "@/components/Onboarding";
+import { isWelcomeSeen, markWelcomeSeen, type JournalEntry } from "@/lib/storage";
+import Welcome from "@/components/Welcome";
 import HomeScreen from "@/components/HomeScreen";
 import ResponseScreen from "@/components/ResponseScreen";
 import JournalScreen from "@/components/JournalScreen";
@@ -16,7 +16,7 @@ type Screen = "home" | "response" | "journal" | "signup" | "signin" | "confirm-e
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [screen, setScreen] = useState<Screen>("home");
   const [lastEntry, setLastEntry] = useState<JournalEntry | null>(null);
   const [signUpEmail, setSignUpEmail] = useState("");
@@ -34,10 +34,12 @@ const Index = () => {
 
       setUser(currentUser);
       if (currentUser) {
-        setShowOnboarding(false);
         setScreen("home");
-      } else {
-        setShowOnboarding(!isOnboardingDone());
+      }
+      // Show the v3 Welcome automatically once per browser, including to existing users.
+      if (!isWelcomeSeen()) {
+        markWelcomeSeen();
+        setWelcomeOpen(true);
       }
       setAuthLoading(false);
     };
@@ -65,7 +67,6 @@ const Index = () => {
         setTimeout(() => {
           void migrateAnonymousData(currentUser.id).finally(() => {
             setUser(currentUser);
-            setShowOnboarding(false);
             setScreen("home");
             setAuthLoading(false);
           });
@@ -120,18 +121,24 @@ const Index = () => {
     setAuthLoading(true);
   };
 
+  // Reopening the Welcome never resets the flag, entries, session or Home draft.
+  const openWelcome = () => setWelcomeOpen(true);
+  const closeWelcome = () => {
+    markWelcomeSeen();
+    setWelcomeOpen(false);
+  };
+
+  const navLinkClass = (active: boolean) =>
+    `font-body transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon rounded-sm ${active ? "text-ink" : "text-clay"}`;
+
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1A0F0A' }}>
-        <h1 className="font-display" style={{ fontSize: '36px', fontStyle: 'italic', fontWeight: 300, color: 'rgba(255, 248, 242, 0.9)' }}>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <h1 className="font-display text-[36px] font-semibold text-maroon">
           Sajaa
         </h1>
       </div>
     );
-  }
-
-  if (showOnboarding) {
-    return <Onboarding onComplete={() => setShowOnboarding(false)} />;
   }
 
   if (screen === "signup") {
@@ -154,47 +161,43 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#FDF6F0' }}>
-      <header className="sticky top-0 z-10 backdrop-blur-sm" style={{ background: '#FDF6F0', borderBottom: '1px solid #F0E0D4' }}>
+    <>
+    {/* While the Welcome is open the page behind it is inert: not focusable or clickable, but still mounted. */}
+    <div className="min-h-screen bg-background" {...(welcomeOpen ? { inert: "", "aria-hidden": true } : {})}>
+      <header className="sticky top-0 z-10 border-b border-hairline bg-background/95 backdrop-blur-sm">
         <div className="max-w-[420px] mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="font-display leading-none" style={{ fontSize: '23px', fontStyle: 'italic', color: '#2C1810' }}>Sajaa</h1>
-              <p className="mt-0.5 font-body" style={{ fontSize: '10.5px', color: 'rgba(44, 24, 16, 0.45)' }}>A quiet space for your thoughts.</p>
-            </div>
-            <nav className="flex gap-4 text-xs font-medium items-center">
+            <h1 className="font-display text-[22px] font-semibold leading-none text-maroon">
               <button
-                onClick={() => setScreen("home")}
-                className="transition-colors font-body"
-                style={{ color: screen === "home" ? '#2C1810' : 'rgba(44, 24, 16, 0.45)' }}
+                type="button"
+                onClick={openWelcome}
+                aria-haspopup="dialog"
+                className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
               >
+                Sajaa
+              </button>
+            </h1>
+            <nav className="flex gap-4 text-xs font-medium items-center">
+              <button type="button" onClick={() => setScreen("home")} className={navLinkClass(screen === "home")}>
                 Home
               </button>
-              <button
-                onClick={() => setScreen("journal")}
-                className="transition-colors font-body"
-                style={{ color: screen === "journal" ? '#2C1810' : 'rgba(44, 24, 16, 0.45)' }}
-              >
+              <button type="button" onClick={() => setScreen("journal")} className={navLinkClass(screen === "journal")}>
                 Journal
               </button>
               {user ? (
                 <button
+                  type="button"
                   onClick={async () => {
                     await supabase.auth.signOut();
                     setUser(null);
                     setScreen("home");
                   }}
-                  className="transition-colors font-body"
-                  style={{ color: 'rgba(44, 24, 16, 0.45)', fontSize: '11px' }}
+                  className={navLinkClass(false)}
                 >
                   Sign out
                 </button>
               ) : (
-                <button
-                  onClick={() => setScreen("signin")}
-                  className="transition-colors font-body"
-                  style={{ color: 'rgba(44, 24, 16, 0.45)', fontSize: '11px' }}
-                >
+                <button type="button" onClick={() => setScreen("signin")} className={navLinkClass(false)}>
                   Sign in
                 </button>
               )}
@@ -216,7 +219,20 @@ const Index = () => {
         )}
         {screen === "journal" && <JournalScreen onNavigateHome={() => setScreen("home")} />}
       </main>
+
+      <footer className="max-w-[420px] mx-auto px-6 pb-6 text-center">
+        <button
+          type="button"
+          onClick={openWelcome}
+          aria-haspopup="dialog"
+          className="rounded-sm text-xs text-clay underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon"
+        >
+          About Sajaa
+        </button>
+      </footer>
     </div>
+    {welcomeOpen && <Welcome onBegin={closeWelcome} />}
+    </>
   );
 };
 

@@ -27,7 +27,7 @@ Do not migrate AI providers unless explicitly requested. Anthropic migration is 
 - `src/components/HomeScreen.tsx`: daily reflection input and emotion selection
 - `src/components/ResponseScreen.tsx`: AI response and follow-up conversation
 - `src/components/JournalScreen.tsx`: journal history read through an RPC
-- `src/components/Onboarding.tsx`: single-screen onboarding trust and privacy introduction
+- `src/components/Welcome.tsx`: v3 Welcome screen (wordmark, tagline, privacy footer); shown once per browser via `sajaa_onboarding_v3` and reopened from the header wordmark or the "About Sajaa" footer link
 - `src/lib/session.ts`: anonymous browser session ID stored as `sakeenah_session_id`
 - `src/integrations/supabase/client.ts`: Supabase browser client
 - `src/integrations/supabase/types.ts`: generated Supabase types
