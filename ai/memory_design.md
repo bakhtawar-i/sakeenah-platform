@@ -1,6 +1,6 @@
 # Memory Design
 
-This document describes how Sakeenah handles memory at the session, journal, and (future) longitudinal levels. Memory in this product is deliberately conservative: it exists to deepen continuity of care, not to build a surveillance profile.
+This document describes how Sajaa handles memory at the session, journal, and (future) longitudinal levels. Memory in this product is deliberately conservative: it exists to deepen continuity of care, not to build a surveillance profile.
 
 ## Design Goals
 
@@ -159,7 +159,7 @@ Memory v1 proves whether recency-based context improves retention and response q
 | Weekly emotional themes | Aggregate emotion labels across 7-day windows |
 | Recurring concerns | Detect repeated topics in user-written text (rule-based or lightweight NLP) |
 | Gentle insight summaries | Optional end-of-week reflection card ("This week you often felt…") |
-| Ask Sakeenah | Natural-language Q&A over recent entries (authenticated, bounded) |
+| Ask Sajaa | Natural-language Q&A over recent entries (authenticated, bounded) |
 
 ### Proposed constraints (carry forward from v1)
 
@@ -171,7 +171,7 @@ Memory v1 proves whether recency-based context improves retention and response q
 
 ### Longitudinal understanding (vision)
 
-Over time, Sakeenah aims to understand a user's emotional and spiritual journey the way a thoughtful companion might—not through raw data hoarding, but through:
+Over time, Sajaa aims to understand a user's emotional and spiritual journey the way a thoughtful companion might—not through raw data hoarding, but through:
 
 1. **Continuity** — remembering that last week anxiety around work was present when similar language appears again
 2. **Growth recognition** — noticing shifts from predominantly difficult emotions toward gratitude or peace
@@ -218,7 +218,7 @@ Future reflections can retrieve this entry (once completed)
 
 ---
 
-## Comparison: What Sakeenah Memory Is Not
+## Comparison: What Sajaa Memory Is Not
 
 - **Not a chatbot with infinite context** — four turns per day, three prior entries max
 - **Not RAG over a vector database** — v1 is SQL recency retrieval

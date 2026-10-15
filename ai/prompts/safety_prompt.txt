@@ -1,6 +1,6 @@
 # Safety Prompt — Placeholder Reference
 #
-# Sakeenah uses a layered safety approach. Not all safety behavior is
+# Sajaa uses a layered safety approach. Not all safety behavior is
 # prompt-based; critical paths are enforced deterministically before the LLM.
 #
 # Layer 1 — Deterministic crisis screening (pre-LLM)

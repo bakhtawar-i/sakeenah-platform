@@ -1,11 +1,11 @@
-# Sakeenah Agent Instructions
+# Sajaa Agent Instructions
 
 Read `CLAUDE.md` before editing. It is the detailed product and architecture source of truth.
 When resuming work, start with its `Resume Here` section.
 
 ## Operating Rules
 
-- Treat Sakeenah as a responsive web app deployed through GitHub and Vercel.
+- Treat Sajaa as a responsive web app deployed through GitHub and Vercel.
 - Do not refactor, rewrite, or change architecture unless explicitly requested.
 - Keep Gemini as the AI provider unless a provider migration is explicitly requested.
 - Do not weaken RLS, session isolation, or authentication checks.
@@ -23,7 +23,7 @@ When resuming work, start with its `Resume Here` section.
 ## Product Safety
 
 - This is an emotionally sensitive faith-native product for Muslims of all ages and genders.
-- Do not claim Sakeenah is therapy or a replacement for professional support.
+- Do not claim Sajaa is therapy or a replacement for professional support.
 - Never fabricate Quranic verses or Hadith.
 - Preserve crisis-support behavior. Screen deterministic crisis phrases before Gemini generation and persist the standardized support response through the existing transactional RPC.
 - Avoid gamification that creates guilt, pressure, or anxiety.
@@ -31,7 +31,7 @@ When resuming work, start with its `Resume Here` section.
 
 ## UI Constraints
 
-- Preserve the established Sakeenah visual identity.
+- Preserve the established Sajaa visual identity.
 - Use Cormorant Garamond for display text and Lora for body text.
 - Design mobile-first around a maximum content width of `420px`.
 - Do not modify `src/components/ui/` unless explicitly requested.
