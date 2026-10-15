@@ -5,7 +5,7 @@ export type ArtName =
   | "corner-top-right"
   | "corner-bottom-left"
   | "corner-bottom-right"
-  | "welcome-arch"
+  | "welcome-art-layer"
   | `flower-${"a" | "b"}-${"magenta" | "pink" | "red" | "orange"}`;
 
 interface Props {
