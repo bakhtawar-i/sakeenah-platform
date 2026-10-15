@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isWelcomeSeen, markWelcomeSeen, type JournalEntry } from "@/lib/storage";
 import Welcome from "@/components/Welcome";
+import ScreenFrame from "@/components/layout/ScreenFrame";
 import HomeScreen from "@/components/HomeScreen";
 import ResponseScreen from "@/components/ResponseScreen";
 import JournalScreen from "@/components/JournalScreen";
@@ -133,11 +134,11 @@ const Index = () => {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <ScreenFrame contentClassName="items-center justify-center">
         <h1 className="font-display text-[36px] font-semibold text-maroon">
           Sajaa
         </h1>
-      </div>
+      </ScreenFrame>
     );
   }
 
@@ -163,9 +164,10 @@ const Index = () => {
   return (
     <>
     {/* While the Welcome is open the page behind it is inert: not focusable or clickable, but still mounted. */}
-    <div className="min-h-screen bg-background" {...(welcomeOpen ? { inert: "", "aria-hidden": true } : {})}>
+    <div {...(welcomeOpen ? { inert: "", "aria-hidden": true } : {})}>
+    <ScreenFrame>
       <header className="sticky top-0 z-10 border-b border-hairline bg-background/95 backdrop-blur-sm">
-        <div className="max-w-[420px] mx-auto px-6 py-3">
+        <div className="px-6 py-3">
           <div className="flex items-center justify-between">
             <h1 className="font-display text-[22px] font-semibold leading-none text-maroon">
               <button
@@ -206,7 +208,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="max-w-[420px] mx-auto px-6 pt-9 pb-7">
+      <main className="flex-1 px-6 pt-9 pb-7">
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
           <ResponseScreen
@@ -220,7 +222,7 @@ const Index = () => {
         {screen === "journal" && <JournalScreen onNavigateHome={() => setScreen("home")} />}
       </main>
 
-      <footer className="max-w-[420px] mx-auto px-6 pb-6 text-center">
+      <footer className="px-6 pb-4 text-center">
         <button
           type="button"
           onClick={openWelcome}
@@ -230,6 +232,7 @@ const Index = () => {
           About Sajaa
         </button>
       </footer>
+    </ScreenFrame>
     </div>
     {welcomeOpen && <Welcome onBegin={closeWelcome} />}
     </>

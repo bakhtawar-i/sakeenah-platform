@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { type JournalEntry } from "@/lib/storage";
-import BloomCluster from "@/components/art/BloomCluster";
+import ArtImage from "@/components/art/ArtImage";
 
 const EMOTION_ROWS = [
   ["Anxious", "Worried", "Overwhelmed", "Burnt Out"],
@@ -114,7 +114,7 @@ export default function HomeScreen({ onResponse }: Props) {
         <h2 id="home-heading" className="font-display text-[28px] font-semibold leading-tight text-maroon min-[420px]:text-[32px]">
           What's on your mind?
         </h2>
-        <BloomCluster size={56} className="-mt-3 shrink-0" />
+        <ArtImage name="flower-a-magenta" width={64} height={64} className="-mt-3 h-16 w-16 shrink-0" />
       </div>
 
       <textarea
@@ -173,11 +173,6 @@ export default function HomeScreen({ onResponse }: Props) {
         </div>
       )}
 
-      {/* Bottom-corner artwork sits in its own strip below all content, so it never overlaps text, inputs or pills. */}
-      <div className="relative -mx-6 -mb-7 mt-10 h-24" aria-hidden="true">
-        <BloomCluster size={88} flip className="absolute bottom-0 left-0" />
-        <BloomCluster size={88} className="absolute bottom-0 right-0" />
-      </div>
     </div>
   );
 }

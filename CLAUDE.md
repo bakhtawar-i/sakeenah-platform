@@ -111,9 +111,10 @@ Implementation notes:
 - Prefer token classes (`bg-maroon`, `text-clay`, `font-arabic`) over hardcoded hex in new or restyled code.
 - Fonts are self-hosted in `public/fonts` and declared with `@font-face` in `src/index.css`; never load fonts from Google or another third-party CDN. `font-display` and `font-body` are both Readex Pro; `font-arabic` is Aref Ruqaa, subset to the سجى wordmark (U+062C, U+0633, U+0649).
 - Never put white text on coral.
-- Maximum content width: `420px`, mobile-first.
+- Every screen renders inside `src/components/layout/ScreenFrame.tsx`: a centred column, max `430px` wide (full width on phones), at least `100dvh` tall, on a cream `html`/`body`. Corner artwork is positioned at the column's corners, with a reserved band so it never overlaps content.
 - Primary buttons and feeling pills: pill shape.
 - Decorative artwork stays at screen edges, never behind text, inputs or pills, and all motion is disabled under `prefers-reduced-motion`.
+- Artwork lives in `public/art/` (`webp/` preferred, `svg/` fallback, `brand/` for icons and the wordmark). Render it with `src/components/art/ArtImage.tsx`, which is decorative (`aria-hidden`, no pointer events).
 
 Do not modify files under `src/components/ui/` unless explicitly requested.
 

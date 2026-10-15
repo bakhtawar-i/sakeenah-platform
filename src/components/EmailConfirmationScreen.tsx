@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ScreenFrame from "@/components/layout/ScreenFrame";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
@@ -25,14 +26,7 @@ export default function EmailConfirmationScreen({ email, onBackToSignUp }: Props
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-8"
-      style={{ background: '#1A0F0A' }}
-    >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% 20%, rgba(193,124,116,0.10) 0%, transparent 70%)' }}
-      />
+    <ScreenFrame contentClassName="items-center justify-center px-8 py-10">
 
       <div className="max-w-sm w-full relative z-10 animate-fade-in text-center">
         {/* Mail icon */}
@@ -45,17 +39,17 @@ export default function EmailConfirmationScreen({ email, onBackToSignUp }: Props
 
         <h2
           className="font-display"
-          style={{ fontSize: '28px', fontWeight: 300, fontStyle: 'italic', color: 'rgba(255, 248, 242, 0.9)', marginBottom: '16px' }}
+          style={{ fontSize: '28px', fontWeight: 600, color: 'hsl(var(--maroon))', marginBottom: '16px' }}
         >
           Check your email
         </h2>
 
         <p
           className="font-body"
-          style={{ fontSize: '14px', color: 'rgba(255, 248, 242, 0.40)', lineHeight: '1.8', marginBottom: '32px' }}
+          style={{ fontSize: '14px', color: 'hsl(var(--clay))', lineHeight: '1.8', marginBottom: '32px' }}
         >
           We sent a confirmation link to{" "}
-          <span style={{ color: 'rgba(255, 248, 242, 0.65)' }}>{email}</span>.
+          <span style={{ color: 'hsl(var(--ink))' }}>{email}</span>.
           Please verify your email to continue.
         </p>
 
@@ -64,8 +58,8 @@ export default function EmailConfirmationScreen({ email, onBackToSignUp }: Props
           disabled={cooldown || resending}
           className="w-full font-body font-medium"
           style={{
-            background: cooldown ? 'rgba(44, 24, 16, 0.3)' : '#2C1810',
-            color: '#FDF6F0',
+            background: cooldown ? 'hsl(var(--maroon) / 0.4)' : 'hsl(var(--maroon))',
+            color: 'hsl(var(--cream))',
             borderRadius: '100px',
             padding: '14px',
             fontSize: '14px',
@@ -77,7 +71,7 @@ export default function EmailConfirmationScreen({ email, onBackToSignUp }: Props
         </button>
 
         {resent && (
-          <p className="font-body" style={{ fontSize: '12px', color: 'rgba(193, 124, 116, 0.8)', marginTop: '12px' }}>
+          <p className="font-body" style={{ fontSize: '12px', color: 'hsl(var(--clay))', marginTop: '12px' }}>
             Confirmation email resent.
           </p>
         )}
@@ -86,12 +80,12 @@ export default function EmailConfirmationScreen({ email, onBackToSignUp }: Props
           <button
             onClick={onBackToSignUp}
             className="font-body"
-            style={{ fontSize: '13px', color: 'rgba(255, 248, 242, 0.35)', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ fontSize: '13px', color: 'hsl(var(--clay))', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             Use a different email
           </button>
         </p>
       </div>
-    </div>
+    </ScreenFrame>
   );
 }

@@ -113,12 +113,17 @@
     @apply border-border;
   }
 
+  /* Cream everywhere, including overscroll and areas outside the app column. */
+  html {
+    background-color: hsl(var(--cream));
+  }
+
   body {
     @apply text-foreground bg-background;
     font-family: var(--font-body);
     font-size: 15px;
     line-height: 1.85;
-    min-height: 100vh;
+    min-height: 100dvh;
     /* Readex Pro has no italic; don't let browsers fake one. */
     font-synthesis-style: none;
   }

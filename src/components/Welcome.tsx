@@ -1,5 +1,6 @@
 import { useEffect, useRef, type KeyboardEvent } from "react";
-import BloomCluster from "@/components/art/BloomCluster";
+import ArtImage from "@/components/art/ArtImage";
+import ScreenFrame from "@/components/layout/ScreenFrame";
 
 interface Props {
   /** Close the Welcome screen and return to wherever the user was. */
@@ -41,41 +42,41 @@ export default function Welcome({ onBegin }: Props) {
       onKeyDown={handleKeyDown}
       className="fixed inset-0 z-50 overflow-y-auto bg-cream"
     >
-      <div className="mx-auto flex min-h-full max-w-[420px] flex-col px-6">
-        {/* Artwork lives in reserved strips above and below the content, never behind it. */}
-        <div className="relative h-20 shrink-0" aria-hidden="true">
-          <BloomCluster size={80} className="absolute -right-6 top-0 -scale-y-100" />
-        </div>
+      <ScreenFrame topArt compactArt contentClassName="items-center px-6 text-center">
+        {/* Spare height falls above the arch and below the footer; the groups keep even 20px gaps. */}
+        <div className="flex-1" aria-hidden="true" />
 
-        <div className="flex flex-1 flex-col items-center justify-center text-center animate-fade-in">
-          <div className="flex h-48 w-40 items-center justify-center rounded-t-full border-2 border-maroon bg-turquoise pt-6">
-            <span className="rounded-lg bg-cream px-4 pb-3 pt-1">
-              <span lang="ar" dir="rtl" className="font-arabic text-[64px] font-bold leading-none text-maroon">
+        <div className="flex flex-col items-center gap-5 py-2 animate-fade-in">
+          <div className="relative h-[260px] w-[180px] shrink-0">
+            <ArtImage name="welcome-arch" width={180} height={260} className="absolute inset-0 h-full w-full" />
+            <span className="absolute left-1/2 top-[146px] flex h-14 w-24 -translate-x-1/2 items-center justify-center rounded-lg bg-cream">
+              <span lang="ar" dir="rtl" className="translate-y-[7px] font-arabic text-[26px] font-bold leading-none text-maroon">
                 سجى
               </span>
             </span>
           </div>
 
-          <p className="mt-6 text-sm font-semibold tracking-[0.3em] text-maroon">SAJAA</p>
-
-          <h1
-            ref={headingRef}
-            tabIndex={-1}
-            className="mt-4 text-[28px] font-semibold leading-tight text-maroon focus:outline-none"
-          >
-            Set it down here.
-          </h1>
-          <p className="mt-2 text-[15px] text-clay">One calm reflection a day.</p>
+          <div>
+            <p className="text-sm font-semibold tracking-[0.3em] text-maroon">SAJAA</p>
+            <h1
+              ref={headingRef}
+              tabIndex={-1}
+              className="mt-2 text-[28px] font-semibold leading-tight text-maroon focus:outline-none"
+            >
+              Set it down here.
+            </h1>
+            <p className="mt-1 text-[15px] text-clay">One calm reflection a day.</p>
+          </div>
 
           <button
             type="button"
             onClick={onBegin}
-            className="mt-8 rounded-full bg-maroon px-10 py-3 text-sm font-medium text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+            className="rounded-full bg-maroon px-10 py-3 text-sm font-medium text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
           >
             Begin
           </button>
 
-          <div className="mt-10 space-y-2 text-[13px] leading-relaxed text-clay">
+          <div className="space-y-2 text-[13px] leading-relaxed text-clay">
             <p>
               Your reflections are stored privately and securely. They are used only to generate your responses and are never sold or shared for advertising.
             </p>
@@ -83,11 +84,8 @@ export default function Welcome({ onBegin }: Props) {
           </div>
         </div>
 
-        <div className="relative -mx-6 mt-8 h-24 shrink-0" aria-hidden="true">
-          <BloomCluster size={88} flip className="absolute bottom-0 left-0" />
-          <BloomCluster size={88} className="absolute bottom-0 right-0" />
-        </div>
-      </div>
+        <div className="flex-1" aria-hidden="true" />
+      </ScreenFrame>
     </div>
   );
 }
