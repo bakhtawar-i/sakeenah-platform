@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import ArtImage from "@/components/art/ArtImage";
+import { COLUMN_CLASS } from "@/components/layout/column";
+import { cn } from "@/lib/utils";
 
 interface Props {
   /** Close the Welcome screen and return to wherever the user was. */
@@ -10,13 +12,17 @@ interface Props {
 const STAGE_WIDTH = 390;
 const STAGE_HEIGHT = 844;
 const MAX_SCALE = 1.15;
+// Up to this many design units of art may be cropped off the top and bottom (all text sits
+// between y 197 and 734), so the stage can fill the column width instead of leaving side gaps.
+const MAX_VERTICAL_CROP = 60;
 
 /**
  * v3 Welcome screen, shown as a full-screen dialog over the app so the page
  * underneath (including any Home draft) stays mounted while it is open.
  *
  * Art, text and button all live on one 390x844 stage that is scaled as a
- * whole to fit the 430px column, so they never drift apart and nothing scrolls.
+ * whole to fill the column width, so they never drift apart and nothing
+ * scrolls. Art beyond the column (or its card edge on desktop) is cropped.
  */
 export default function Welcome({ onBegin }: Props) {
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -27,7 +33,13 @@ export default function Welcome({ onBegin }: Props) {
     const column = columnRef.current;
     if (!column) return;
     const fit = () =>
-      setScale(Math.min(column.clientWidth / STAGE_WIDTH, column.clientHeight / STAGE_HEIGHT, MAX_SCALE));
+      setScale(
+        Math.min(
+          column.clientWidth / STAGE_WIDTH,
+          column.clientHeight / (STAGE_HEIGHT - 2 * MAX_VERTICAL_CROP),
+          MAX_SCALE,
+        ),
+      );
     fit();
     const observer = new ResizeObserver(fit);
     observer.observe(column);
@@ -60,9 +72,9 @@ export default function Welcome({ onBegin }: Props) {
       aria-modal="true"
       aria-label="Welcome to Sajaa"
       onKeyDown={handleKeyDown}
-      className="fixed inset-0 z-50 overflow-hidden bg-cream"
+      className="fixed inset-0 z-50 overflow-hidden bg-cream min-[431px]:bg-blush"
     >
-      <div ref={columnRef} className="relative mx-auto h-[100dvh] w-full max-w-[430px] overflow-hidden bg-cream">
+      <div ref={columnRef} className={cn(COLUMN_CLASS, "h-[100dvh] min-[431px]:h-[calc(100dvh-48px)]")}>
         <div
           className="absolute left-1/2 top-1/2 h-[844px] w-[390px]"
           style={{ transform: `translate(-50%, -50%) scale(${scale})` }}

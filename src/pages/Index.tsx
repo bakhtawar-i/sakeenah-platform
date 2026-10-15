@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isWelcomeSeen, markWelcomeSeen, type JournalEntry } from "@/lib/storage";
 import Welcome from "@/components/Welcome";
 import ScreenFrame from "@/components/layout/ScreenFrame";
+import ArtImage from "@/components/art/ArtImage";
 import HomeScreen from "@/components/HomeScreen";
 import ResponseScreen from "@/components/ResponseScreen";
 import JournalScreen from "@/components/JournalScreen";
@@ -129,8 +130,9 @@ const Index = () => {
     setWelcomeOpen(false);
   };
 
+  // Active item: maroon with a coral underline (decorative, not the only cue: aria-current is set too).
   const navLinkClass = (active: boolean) =>
-    `font-body transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon rounded-sm ${active ? "text-ink" : "text-clay"}`;
+    `font-body border-b-2 pb-[3px] leading-normal transition-colors hover:text-maroon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon ${active ? "border-coral text-maroon" : "border-transparent text-clay-deep"}`;
 
   if (authLoading) {
     return (
@@ -165,50 +167,52 @@ const Index = () => {
     <>
     {/* While the Welcome is open the page behind it is inert: not focusable or clickable, but still mounted. */}
     <div {...(welcomeOpen ? { inert: "", "aria-hidden": true } : {})}>
-    <ScreenFrame>
-      <header className="sticky top-0 z-10 border-b border-hairline bg-background/95 backdrop-blur-sm">
-        <div className="px-6 py-3">
-          <div className="flex items-center justify-between">
-            <h1 className="font-display text-[22px] font-semibold leading-none text-maroon">
+    <ScreenFrame art={screen === "home" ? "home" : "corners"}>
+      <header className="sticky top-0 z-10 bg-cream/95 backdrop-blur-sm">
+        <div className="flex h-[72px] items-center justify-between px-5">
+          <h1 className="font-display text-[21px] font-semibold leading-none text-maroon">
+            <button
+              type="button"
+              onClick={openWelcome}
+              aria-haspopup="dialog"
+              className="flex items-center gap-[10px] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+            >
+              {/* 22x28 slot as in the mockup; the logo file has transparent padding, so it is drawn larger and offset to put its ink in the slot. */}
+              <span className="relative h-[28px] w-[22px] shrink-0">
+                <ArtImage name="logo-mark" width={34} height={45} className="absolute -left-[6px] -top-[8px] h-[45px] w-[34px] max-w-none" />
+              </span>
+              Sajaa
+            </button>
+          </h1>
+          <nav className="flex items-center gap-[18px] text-[15px] font-medium">
+            <button type="button" onClick={() => setScreen("home")} aria-current={screen === "home" ? "page" : undefined} className={navLinkClass(screen === "home")}>
+              Home
+            </button>
+            <button type="button" onClick={() => setScreen("journal")} aria-current={screen === "journal" ? "page" : undefined} className={navLinkClass(screen === "journal")}>
+              Journal
+            </button>
+            {user ? (
               <button
                 type="button"
-                onClick={openWelcome}
-                aria-haspopup="dialog"
-                className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setUser(null);
+                  setScreen("home");
+                }}
+                className={navLinkClass(false)}
               >
-                Sajaa
+                Sign out
               </button>
-            </h1>
-            <nav className="flex gap-4 text-xs font-medium items-center">
-              <button type="button" onClick={() => setScreen("home")} className={navLinkClass(screen === "home")}>
-                Home
+            ) : (
+              <button type="button" onClick={() => setScreen("signin")} className={navLinkClass(false)}>
+                Sign in
               </button>
-              <button type="button" onClick={() => setScreen("journal")} className={navLinkClass(screen === "journal")}>
-                Journal
-              </button>
-              {user ? (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    setUser(null);
-                    setScreen("home");
-                  }}
-                  className={navLinkClass(false)}
-                >
-                  Sign out
-                </button>
-              ) : (
-                <button type="button" onClick={() => setScreen("signin")} className={navLinkClass(false)}>
-                  Sign in
-                </button>
-              )}
-            </nav>
-          </div>
+            )}
+          </nav>
         </div>
       </header>
 
-      <main className="flex-1 px-6 pt-9 pb-7">
+      <main className={`flex-1 px-5 pb-7 ${screen === "home" ? "pt-0" : "pt-9"}`}>
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
           <ResponseScreen
@@ -222,7 +226,7 @@ const Index = () => {
         {screen === "journal" && <JournalScreen onNavigateHome={() => setScreen("home")} />}
       </main>
 
-      <footer className="px-6 pb-4 text-center">
+      <footer className="px-5 pb-4 text-center">
         <button
           type="button"
           onClick={openWelcome}

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { type JournalEntry } from "@/lib/storage";
-import ArtImage from "@/components/art/ArtImage";
 
 const EMOTION_ROWS = [
   ["Anxious", "Worried", "Overwhelmed", "Burnt Out"],
@@ -108,14 +107,12 @@ export default function HomeScreen({ onResponse }: Props) {
   const canSubmit = thought.trim().length > 0 && !loading;
 
   return (
-    <div className="animate-fade-in pt-[36px]">
+    <div className="animate-fade-in pt-6">
 
-      <div className="mb-7 flex items-start justify-between gap-3">
-        <h2 id="home-heading" className="font-display text-[28px] font-semibold leading-tight text-maroon min-[420px]:text-[32px]">
-          What's on your mind?
-        </h2>
-        <ArtImage name="flower-a-magenta" width={64} height={64} className="-mt-3 h-16 w-16 shrink-0" />
-      </div>
+      {/* Narrow enough to stay left of the top-right artwork (which starts 129px from the column's right edge). */}
+      <h2 id="home-heading" className="font-display max-w-[min(230px,calc(100%-117px))] text-[30px] font-semibold leading-[1.2] text-maroon">
+        What's on your mind?
+      </h2>
 
       <textarea
         value={thought}
@@ -124,17 +121,17 @@ export default function HomeScreen({ onResponse }: Props) {
         aria-describedby="home-char-count"
         placeholder="What is on your heart today..."
         rows={5}
-        className="font-body block min-h-[164px] w-full resize-none rounded-xl border border-hairline bg-white px-[18px] py-4 text-[15px] leading-[1.85] text-ink transition-[border-color,box-shadow] duration-200 placeholder:text-clay focus:border-maroon focus:outline-none focus:ring-[3px] focus:ring-maroon/15"
+        className="font-body mt-7 block h-[190px] w-full resize-none rounded-[20px] border-[1.5px] border-turquoise bg-white p-[18px] text-[17px] leading-[1.45] text-ink transition-[border-color,box-shadow] duration-200 placeholder:text-[#85666A] focus:border-maroon focus:outline-none focus:ring-[3px] focus:ring-maroon/15"
       />
-      <p id="home-char-count" className={`mt-1 text-right text-xs ${remaining < 30 ? "text-maroon" : "text-clay"}`}>
+      <p id="home-char-count" className={`mt-2 text-right text-[13px] ${remaining < 30 ? "text-maroon" : "text-clay"}`}>
         {remaining} {remaining === 1 ? "character" : "characters"} remaining
       </p>
 
-      <p id="home-feelings-label" className="font-body mt-7 text-xs text-clay">
+      <p id="home-feelings-label" className="font-body mt-[26px] text-[15px] font-medium text-clay-deep">
         What feels closest right now?
       </p>
 
-      <div role="group" aria-labelledby="home-feelings-label" className="mt-2 flex flex-wrap justify-start gap-[10px]">
+      <div role="group" aria-labelledby="home-feelings-label" className="mt-3 flex flex-wrap justify-start gap-[10px]">
         {EMOTION_ROWS.map((row) =>
           row.map((e) => {
             const isActive = emotions.includes(e);
@@ -144,7 +141,7 @@ export default function HomeScreen({ onResponse }: Props) {
                 type="button"
                 onClick={() => toggleEmotion(e)}
                 aria-pressed={isActive}
-                className={`chip min-w-[104px] whitespace-nowrap px-3 text-center ${isActive ? "chip-active" : ""}`}
+                className={`chip flex h-10 items-center whitespace-nowrap border-[1.5px] px-4 text-[14px] font-normal ${isActive ? "chip-active" : ""}`}
               >
                 {e}
               </button>
@@ -157,7 +154,7 @@ export default function HomeScreen({ onResponse }: Props) {
         type="button"
         onClick={submit}
         disabled={!canSubmit}
-        className="mt-7 w-full rounded-full bg-maroon py-3 text-sm font-medium text-cream transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40"
+        className="mt-11 h-14 w-full rounded-[28px] bg-maroon text-[17px] font-semibold text-cream transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-40"
       >
         {loading ? (
           <span className="animate-pulse-soft">Reflecting...</span>
