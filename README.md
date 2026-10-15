@@ -3,7 +3,7 @@
 **AI-Assisted Reflection Platform**  
 Designed for intentional journaling, not engagement optimization  
 
-🌐 Live: https://sajaa.vercel.app/  
+🌐 Live: https://sajaa-app.vercel.app/  
 👥 20+ active users  
 
 ---
