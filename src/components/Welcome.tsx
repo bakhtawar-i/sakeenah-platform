@@ -48,9 +48,11 @@ export default function Welcome({ onBegin }: Props) {
         </div>
 
         <div className="flex flex-1 flex-col items-center justify-center text-center animate-fade-in">
-          <div className="flex h-48 w-40 items-center justify-center rounded-t-full border border-hairline bg-blush pt-6">
-            <span lang="ar" dir="rtl" className="font-arabic text-[64px] font-bold leading-none text-maroon">
-              سجى
+          <div className="flex h-48 w-40 items-center justify-center rounded-t-full border-2 border-maroon bg-turquoise pt-6">
+            <span className="rounded-lg bg-cream px-4 pb-3 pt-1">
+              <span lang="ar" dir="rtl" className="font-arabic text-[64px] font-bold leading-none text-maroon">
+                سجى
+              </span>
             </span>
           </div>
 
@@ -59,7 +61,7 @@ export default function Welcome({ onBegin }: Props) {
           <h1
             ref={headingRef}
             tabIndex={-1}
-            className="mt-4 text-[28px] font-semibold leading-tight text-ink focus:outline-none"
+            className="mt-4 text-[28px] font-semibold leading-tight text-maroon focus:outline-none"
           >
             Set it down here.
           </h1>
@@ -73,7 +75,7 @@ export default function Welcome({ onBegin }: Props) {
             Begin
           </button>
 
-          <div className="mt-10 space-y-2 text-[11px] leading-relaxed text-clay">
+          <div className="mt-10 space-y-2 text-[13px] leading-relaxed text-clay">
             <p>
               Your reflections are stored privately and securely. They are used only to generate your responses and are never sold or shared for advertising.
             </p>
