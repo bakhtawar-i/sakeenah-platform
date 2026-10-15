@@ -109,7 +109,7 @@ Implementation notes:
 
 - Palette tokens live in `src/index.css` (`--ink`, `--cream`, `--maroon`, `--clay`, `--clay-deep`, `--turquoise`, `--mint`, `--coral`, `--blush`, `--bloom-*`, `--hairline`) and map to Tailwind colors of the same names in `tailwind.config.ts`. shadcn semantic tokens (`--primary`, `--background`, ...) point at them.
 - Prefer token classes (`bg-maroon`, `text-clay`, `font-arabic`) over hardcoded hex in new or restyled code.
-- Fonts are loaded in `index.html`. `font-display` and `font-body` are both Readex Pro; `font-arabic` is Aref Ruqaa, subset to the سجى wordmark.
+- Fonts are self-hosted in `public/fonts` and declared with `@font-face` in `src/index.css`; never load fonts from Google or another third-party CDN. `font-display` and `font-body` are both Readex Pro; `font-arabic` is Aref Ruqaa, subset to the سجى wordmark (U+062C, U+0633, U+0649).
 - Never put white text on coral.
 - Maximum content width: `420px`, mobile-first.
 - Primary buttons and feeling pills: pill shape.
