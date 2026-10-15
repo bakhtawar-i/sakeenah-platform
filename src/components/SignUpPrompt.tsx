@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ScreenFrame from "@/components/layout/ScreenFrame";
 import { signUp } from "@/lib/auth";
 
 interface Props {
@@ -39,31 +40,24 @@ export default function SignUpPrompt({ onSignUpSuccess, onSignIn }: Props) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-8"
-      style={{ background: '#1A0F0A' }}
-    >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% 20%, rgba(193,124,116,0.10) 0%, transparent 70%)' }}
-      />
+    <ScreenFrame contentClassName="items-center justify-center px-8 py-10">
 
       <div className="max-w-sm w-full relative z-10 animate-fade-in">
         <h2
           className="font-display text-center"
-          style={{ fontSize: '28px', fontWeight: 300, fontStyle: 'italic', color: 'rgba(255, 248, 242, 0.9)', marginBottom: '12px' }}
+          style={{ fontSize: '28px', fontWeight: 600, color: 'hsl(var(--maroon))', marginBottom: '12px' }}
         >
           Save your reflections
         </h2>
         <p
           className="font-body text-center"
-          style={{ fontSize: '14px', color: 'rgba(255, 248, 242, 0.40)', marginBottom: '32px', lineHeight: '1.8' }}
+          style={{ fontSize: '14px', color: 'hsl(var(--clay))', marginBottom: '32px', lineHeight: '1.8' }}
         >
           Create an account to keep your journal entries safe and access them anytime.
         </p>
 
         {errors.general && (
-          <p className="font-body text-center" style={{ fontSize: '12px', color: '#C17C74', marginBottom: '16px' }}>
+          <p className="font-body text-center" style={{ fontSize: '12px', color: 'hsl(var(--maroon))', marginBottom: '16px' }}>
             {errors.general}
           </p>
         )}
@@ -77,18 +71,18 @@ export default function SignUpPrompt({ onSignUpSuccess, onSignIn }: Props) {
             className="w-full font-body"
             style={{
               background: '#FFFFFF',
-              border: `0.5px solid ${errors.email ? '#C17C74' : '#E8D5C8'}`,
+              border: `0.5px solid ${errors.email ? 'hsl(var(--maroon))' : 'hsl(var(--hairline))'}`,
               borderRadius: '12px',
               padding: '14px 16px',
               fontSize: '14px',
-              color: '#2C1810',
+              color: 'hsl(var(--ink))',
               outline: 'none',
             }}
-            onFocus={(e) => (e.target.style.borderColor = '#C17C74')}
-            onBlur={(e) => { if (!errors.email) e.target.style.borderColor = '#E8D5C8'; }}
+            onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--maroon))')}
+            onBlur={(e) => { if (!errors.email) e.target.style.borderColor = 'hsl(var(--hairline))'; }}
           />
           {errors.email && (
-            <p className="font-body" style={{ fontSize: '12px', color: '#A85E56', marginTop: '6px' }}>{errors.email}</p>
+            <p className="font-body" style={{ fontSize: '12px', color: 'hsl(var(--maroon))', marginTop: '6px' }}>{errors.email}</p>
           )}
         </div>
 
@@ -101,18 +95,18 @@ export default function SignUpPrompt({ onSignUpSuccess, onSignIn }: Props) {
             className="w-full font-body"
             style={{
               background: '#FFFFFF',
-              border: `0.5px solid ${errors.password ? '#C17C74' : '#E8D5C8'}`,
+              border: `0.5px solid ${errors.password ? 'hsl(var(--maroon))' : 'hsl(var(--hairline))'}`,
               borderRadius: '12px',
               padding: '14px 16px',
               fontSize: '14px',
-              color: '#2C1810',
+              color: 'hsl(var(--ink))',
               outline: 'none',
             }}
-            onFocus={(e) => (e.target.style.borderColor = '#C17C74')}
-            onBlur={(e) => { if (!errors.password) e.target.style.borderColor = '#E8D5C8'; }}
+            onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--maroon))')}
+            onBlur={(e) => { if (!errors.password) e.target.style.borderColor = 'hsl(var(--hairline))'; }}
           />
           {errors.password && (
-            <p className="font-body" style={{ fontSize: '12px', color: '#A85E56', marginTop: '6px' }}>{errors.password}</p>
+            <p className="font-body" style={{ fontSize: '12px', color: 'hsl(var(--maroon))', marginTop: '6px' }}>{errors.password}</p>
           )}
         </div>
 
@@ -121,8 +115,8 @@ export default function SignUpPrompt({ onSignUpSuccess, onSignIn }: Props) {
           disabled={loading}
           className="w-full font-body font-medium"
           style={{
-            background: loading ? 'rgba(253, 246, 240, 0.5)' : '#FDF6F0',
-            color: '#2C1810',
+            background: loading ? 'hsl(var(--maroon) / 0.4)' : 'hsl(var(--maroon))',
+            color: 'hsl(var(--cream))',
             borderRadius: '100px',
             padding: '14px',
             fontSize: '14px',
@@ -137,12 +131,12 @@ export default function SignUpPrompt({ onSignUpSuccess, onSignIn }: Props) {
           <button
             onClick={onSignIn}
             className="font-body"
-            style={{ fontSize: '13px', color: 'rgba(255, 248, 242, 0.40)', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ fontSize: '13px', color: 'hsl(var(--clay))', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            Already have an account? <span style={{ color: 'rgba(255, 248, 242, 0.65)' }}>Sign in</span>
+            Already have an account? <span style={{ color: 'hsl(var(--ink))' }}>Sign in</span>
           </button>
         </p>
       </div>
-    </div>
+    </ScreenFrame>
   );
 }

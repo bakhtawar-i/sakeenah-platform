@@ -173,11 +173,6 @@ export default function HomeScreen({ onResponse }: Props) {
         </div>
       )}
 
-      {/* Bottom-corner artwork sits in its own strip below all content, so it never overlaps text, inputs or pills. */}
-      <div className="-mx-6 -mb-7 mt-10 flex items-end justify-between" aria-hidden="true">
-        <ArtImage name="corner-bottom-left" width={195} height={150} className="h-auto w-[min(46%,195px)]" />
-        <ArtImage name="corner-bottom-right" width={195} height={150} className="h-auto w-[min(46%,195px)]" />
-      </div>
     </div>
   );
 }
