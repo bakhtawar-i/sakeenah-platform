@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
-import ArtImage from "@/components/art/ArtImage";
+import MotionArt from "@/components/art/MotionArt";
 import { COLUMN_CLASS } from "@/components/layout/column";
 import { cn } from "@/lib/utils";
 
@@ -110,7 +110,7 @@ export default function Welcome({ onBegin }: Props) {
           {/* The fade lives on this inner layer: its keyframes animate transform, which would override the stage scale. */}
           <div className="absolute inset-0 animate-fade-in">
             {/* The whole Welcome artwork (window, plaque, sill, flowers, lines); contains no text. */}
-            <ArtImage name="welcome-art-layer" width={STAGE_WIDTH} height={STAGE_HEIGHT} className="absolute left-0 top-0 h-[844px] w-[390px]" />
+            <MotionArt name="welcome-art-layer" className="absolute left-0 top-0 h-[844px] w-[390px]" />
 
             <div className="absolute left-[121px] top-[197px] flex h-[106px] w-[150px] items-center justify-center">
               {/* The self-hosted three-letter Aref Ruqaa subset has different vertical metrics from the full font,
