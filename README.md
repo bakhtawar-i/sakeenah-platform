@@ -1,18 +1,18 @@
-# Sakeenah  
+# Sajaa (سجى)  
 
 **AI-Assisted Reflection Platform**  
 Designed for intentional journaling, not engagement optimization  
 
-🌐 Live: https://sakeenah-journal.vercel.app/  
+🌐 Live: https://sajaa.vercel.app/  
 👥 20+ active users  
 
 ---
 
 ## 🧠 Overview  
 
-Sakeenah is a conversational AI system designed to support structured self-reflection.  
+Sajaa is a conversational AI system designed to support structured self-reflection.  
 
-Unlike traditional AI assistants that optimize for longer interactions, Sakeenah is intentionally constrained—encouraging users to pause, reflect, and disengage after meaningful interaction.  
+Unlike traditional AI assistants that optimize for longer interactions, Sajaa is intentionally constrained—encouraging users to pause, reflect, and disengage after meaningful interaction.  
 
 The system combines **LLM orchestration, contextual memory, and behavioral constraints** to guide journaling in a focused and emotionally aware manner.
 
@@ -27,7 +27,7 @@ Most AI systems are optimized for:
 - higher engagement  
 - more usage  
 
-Sakeenah is built around a different principle:
+Sajaa is built around a different principle:
 
 > **Reflection over engagement.**
 
@@ -102,7 +102,7 @@ JournalScreen → Supabase RPC → Historical Entries
 
 ## 🧠 Memory System  
 
-Sakeenah implements a **multi-level memory design**:
+Sajaa implements a **multi-level memory design**:
 
 ### 1. Session Memory  
 - Maintains context within a single journaling session  
@@ -136,7 +136,7 @@ The system is not a simple chatbot wrapper. It includes:
 
 ## ⚠️ Safety & Behavioral Constraints  
 
-Sakeenah incorporates guardrails for sensitive interactions:
+Sajaa incorporates guardrails for sensitive interactions:
 
 - Emotion-aware response shaping  
 - Avoidance of harmful or escalating outputs  
@@ -193,7 +193,7 @@ Session memory, journal persistence, structured storage
 
 ## 🎯 Why This Project  
 
-Sakeenah was built to explore a different paradigm for AI systems:  
+Sajaa was built to explore a different paradigm for AI systems:  
 
 > Systems that help users **stop**, rather than continue.  
 

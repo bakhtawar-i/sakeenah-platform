@@ -192,7 +192,7 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
           </div>
         </div>
 
-        {/* 3. SAKEENAH ASKS - Left-aligned chat bubble (only for turn 1 question) */}
+        {/* 3. SAJAA ASKS - Left-aligned chat bubble (only for turn 1 question) */}
         {question && entry.turnCount === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
             <span
@@ -204,7 +204,7 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
                 marginBottom: '6px',
               }}
             >
-              Sakeenah asks
+              Sajaa asks
             </span>
             <div
               style={{
@@ -249,7 +249,7 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
                   marginBottom: '6px',
                 }}
               >
-                Sakeenah
+                Sajaa
               </span>
             )}
             <div

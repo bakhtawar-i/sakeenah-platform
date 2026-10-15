@@ -1,10 +1,10 @@
 # System Design
 
-High-level architecture for **Sakeenah** — a private, faith-native reflection web application. This document is written for engineers, reviewers, and ML/AI portfolio readers who need to understand how the system fits together without reading the full codebase.
+High-level architecture for **Sajaa** — a private, faith-native reflection web application. This document is written for engineers, reviewers, and ML/AI portfolio readers who need to understand how the system fits together without reading the full codebase.
 
 ## Product Summary
 
-Sakeenah helps Muslims write one daily reflection, optionally tag emotions, receive an AI response grounded in tawakkul (trust in Allah), and continue a short guided conversation (up to four exchanges). The product prioritizes emotional safety, Islamic authenticity, privacy, and retention over feature breadth.
+Sajaa helps Muslims write one daily reflection, optionally tag emotions, receive an AI response grounded in tawakkul (trust in Allah), and continue a short guided conversation (up to four exchanges). The product prioritizes emotional safety, Islamic authenticity, privacy, and retention over feature breadth.
 
 **Deployment:** React SPA on Vercel · Supabase (Auth, Postgres, Edge Functions) · Gemini via server-side API calls
 
@@ -259,7 +259,7 @@ Supabase migrations and Edge Functions are deployed separately from the Vercel f
 Documented for context; not in active development unless retention evidence supports prioritization:
 
 - Weekly pattern detection and insight summaries
-- Ask Sakeenah over recent entries
+- Ask Sajaa over recent entries
 - Active-reflection resume support
 - Soft paywall / payments
 - Provider migration (e.g., Anthropic) — deferred

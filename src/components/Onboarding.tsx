@@ -1,7 +1,7 @@
 import { completeOnboarding } from "@/lib/storage";
 
 export default function Onboarding({ onComplete }: { onComplete: () => void }) {
-  const enterSakeenah = () => {
+  const enterSajaa = () => {
     completeOnboarding();
     onComplete();
   };
@@ -42,7 +42,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
             marginBottom: '20px',
           }}
         >
-          Sakeenah.
+          Sajaa.
         </h1>
 
         <p
@@ -72,7 +72,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
         </p>
 
         <button
-          onClick={enterSakeenah}
+          onClick={enterSajaa}
           className="font-body font-medium"
           style={{
             background: '#FDF6F0',
@@ -84,7 +84,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
             cursor: 'pointer',
           }}
         >
-          Enter Sakeenah
+          Enter Sajaa
         </button>
 
         <div
@@ -100,7 +100,7 @@ export default function Onboarding({ onComplete }: { onComplete: () => void }) {
             Your reflections are stored privately and securely. They are used only to generate your responses and are never sold or shared for advertising.
           </p>
           <p>
-            Sakeenah is a space for reflection, not a replacement for professional support.
+            Sajaa is a space for reflection, not a replacement for professional support.
           </p>
         </div>
       </div>

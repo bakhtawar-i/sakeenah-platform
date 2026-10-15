@@ -1,12 +1,12 @@
-# Sakeenah - Project Intelligence
+# Sajaa - Project Intelligence
 
 ## Product
 
-Sakeenah is a private, faith-native reflection web app for Muslims of all ages and genders. Users write one reflection per day, optionally select emotions, receive an AI-generated response rooted in tawakkul, and continue a short guided conversation.
+Sajaa is a private, faith-native reflection web app for Muslims of all ages and genders. Users write one reflection per day, optionally select emotions, receive an AI-generated response rooted in tawakkul, and continue a short guided conversation.
 
 This is an emotionally sensitive product. Every change should prioritize user trust, privacy, emotional safety, authenticity of Islamic references, and retention.
 
-Sakeenah is a responsive web app deployed on Vercel. It is not currently a native mobile app or PWA.
+Sajaa is a responsive web app deployed on Vercel. It is not currently a native mobile app or PWA.
 
 ## Current Stack
 
@@ -91,7 +91,7 @@ Reflection persistence belongs inside transactional RPCs. Do not add direct fron
 - Use status value `"completed"`, never `"complete"`.
 - Both messages in one exchange must share the same `turn_number`.
 - Never fabricate Quranic verses or Hadith.
-- Never claim that Sakeenah is a therapist, counsellor, or medical professional.
+- Never claim that Sajaa is a therapist, counsellor, or medical professional.
 - Crisis-related language must return a crisis-support response instead of a standard reflection.
 - Keep journal entries private. Preserve strict RLS and session isolation.
 - Do not add points, punitive streaks, leaderboards, or anxiety-inducing gamification.
@@ -164,7 +164,7 @@ The next work should continue as small pull requests in this order:
 4. Improve follow-up prompt quality from real feedback.
 5. Add active-reflection resume support.
 6. Redesign journal history around the user's journey.
-7. Add Ask Sakeenah over recent entries.
+7. Add Ask Sajaa over recent entries.
 8. Add weekly summaries if Memory v1 proves useful.
 9. Test soft paywall copy before integrating payments.
 

@@ -1,10 +1,10 @@
 # Reflection Pipeline
 
-This document describes how a user reflection flows through Sakeenah—from the browser UI to the language model and back to persistent storage. It is intended for engineers reviewing the AI system design without reading application source code.
+This document describes how a user reflection flows through Sajaa—from the browser UI to the language model and back to persistent storage. It is intended for engineers reviewing the AI system design without reading application source code.
 
 ## Overview
 
-Sakeenah is a bounded, turn-based reflection experience. Each day, an owner (anonymous session or authenticated user) may start **one** initial reflection. That reflection may include up to **four exchanges** (user message + assistant response per exchange). The pipeline is designed for emotional safety, faith authenticity, and strict data isolation.
+Sajaa is a bounded, turn-based reflection experience. Each day, an owner (anonymous session or authenticated user) may start **one** initial reflection. That reflection may include up to **four exchanges** (user message + assistant response per exchange). The pipeline is designed for emotional safety, faith authenticity, and strict data isolation.
 
 ```
 ┌─────────────┐     ┌──────────────────────┐     ┌─────────────┐     ┌──────────────┐
