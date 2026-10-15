@@ -61,6 +61,9 @@
     --bloom-orange: 10.3 86.2% 62.9%;  /* #F26B4F */
     --hairline: 15 23.3% 83.1%;        /* #DECFCA - thin borders, derived from clay on cream */
 
+    /* How far artwork flowers and leaves swing back. Lower it to calm the motion; 0deg stops the sway. */
+    --sway-angle: 4.5deg;
+
     /* shadcn semantic tokens */
     --background: var(--cream);
     --foreground: var(--ink);
@@ -177,6 +180,40 @@
   @keyframes pulse-soft {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
+  }
+
+  /*
+   * Artwork motion (MotionArt). Only transforms animate, so it runs on the compositor
+   * and nothing in the interface moves. Matches the mockup: -4.5deg to +5deg over 3.6s.
+   */
+  @keyframes art-sway {
+    0%, 100% { transform: rotate(calc(var(--sway-angle) * -1)); }
+    50% { transform: rotate(calc(var(--sway-angle) * 10 / 9)); }
+  }
+
+  .art-sway {
+    animation: art-sway 3.6s ease-in-out infinite;
+  }
+
+  /*
+   * Wind line dashes: a strip six dash periods wide, each period 46 parts dash and 38 gap
+   * (the drawing's stroke-dasharray), drifting two periods every 4.2s.
+   */
+  @keyframes art-wind {
+    to { transform: translateX(calc(100% / 3)); }
+  }
+
+  .art-wind {
+    background: linear-gradient(90deg, currentColor 0 54.7619%, transparent 54.7619%) 0 0 / calc(100% / 6) 100% repeat-x;
+    opacity: 0.75;
+    animation: art-wind 4.2s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .art-sway,
+    .art-wind {
+      animation: none;
+    }
   }
 
   .animate-fade-in {

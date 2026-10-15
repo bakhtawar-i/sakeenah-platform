@@ -115,6 +115,7 @@ Implementation notes:
 - Primary buttons and feeling pills: pill shape.
 - Decorative artwork stays at screen edges, never behind text, inputs or pills, and all motion is disabled under `prefers-reduced-motion`.
 - Artwork lives in `public/art/` (`webp/` preferred, `svg/` fallback, `brand/` for icons and the wordmark). Render it with `src/components/art/ArtImage.tsx`, which is decorative (`aria-hidden`, no pointer events).
+- Motion: `welcome-art-layer`, `home-art-top` and `home-art-bottom` render through `src/components/art/MotionArt.tsx`. Their flowers and leaves are pre-rendered WebP sprites in `public/art/motion/` rotated with CSS transforms, and the wind lines are masked dash strips moving with transforms, so the compositor runs it without repainting. Never animate the filtered SVG directly: it repaints every frame and drops to about 25fps on a throttled phone. Regenerate sprites with `scripts/render-art-sprites.cjs` only if the drawing changes; the still drawings are `svg/<name>-static.svg`. The sway amplitude is `--sway-angle` in `src/index.css`. With reduced motion, MotionArt shows the static artwork. Nothing else animates.
 
 Do not modify files under `src/components/ui/` unless explicitly requested.
 

@@ -1,6 +1,9 @@
 import { cn } from "@/lib/utils";
 
-/** Artwork in public/art/: each has webp/<name>@2x.webp and svg/<name>.svg. */
+/**
+ * Artwork in public/art/: each has webp/<name>@2x.webp and svg/<name>.svg.
+ * Animated layers (MotionArt) keep their still drawing in svg/<name>-static.svg.
+ */
 export type ArtName =
   | "corner-top-right"
   | "corner-bottom-left"
@@ -10,6 +13,8 @@ export type ArtName =
   | "home-art-bottom"
   | "logo-mark"
   | `flower-${"a" | "b"}-${"magenta" | "pink" | "red" | "orange"}`;
+
+const ANIMATED: ReadonlySet<ArtName> = new Set<ArtName>(["welcome-art-layer", "home-art-top", "home-art-bottom"]);
 
 interface Props {
   name: ArtName;
@@ -32,7 +37,7 @@ export default function ArtImage({ name, width, height, className }: Props) {
     <picture aria-hidden="true" className={cn("pointer-events-none block select-none", className)}>
       <source type="image/webp" srcSet={`/art/webp/${name}@2x.webp 2x`} />
       <img
-        src={`/art/svg/${name}.svg`}
+        src={`/art/svg/${name}${ANIMATED.has(name) ? "-static" : ""}.svg`}
         alt=""
         width={width}
         height={height}
