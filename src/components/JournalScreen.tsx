@@ -193,7 +193,7 @@ export default function JournalScreen({ onNavigateHome }: Props) {
                 {entry.emotion_labels && entry.emotion_labels.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-1.5">
                     {entry.emotion_labels.map((e) => (
-                      <span key={e} className="chip chip-active chip-active-rose text-[10px] px-2 py-0.5">{e}</span>
+                      <span key={e} className="chip chip-active text-[10px] px-2 py-0.5">{e}</span>
                     ))}
                   </div>
                 )}
