@@ -1,5 +1,5 @@
 import { useEffect, useRef, type KeyboardEvent } from "react";
-import BloomCluster from "@/components/art/BloomCluster";
+import ArtImage from "@/components/art/ArtImage";
 
 interface Props {
   /** Close the Welcome screen and return to wherever the user was. */
@@ -41,15 +41,16 @@ export default function Welcome({ onBegin }: Props) {
       onKeyDown={handleKeyDown}
       className="fixed inset-0 z-50 overflow-y-auto bg-cream"
     >
-      <div className="mx-auto flex min-h-full max-w-[420px] flex-col px-6">
-        {/* Artwork lives in reserved strips above and below the content, never behind it. */}
-        <div className="relative h-20 shrink-0" aria-hidden="true">
-          <BloomCluster size={80} className="absolute -right-6 top-0 -scale-y-100" />
+      <div className="flex min-h-full flex-col">
+        {/* Corner artwork lives in full-width strips above and below the content, at the screen edges, never behind it. */}
+        <div className="flex shrink-0 justify-end" aria-hidden="true">
+          <ArtImage name="corner-top-right" width={195} height={150} className="h-auto w-[min(44vw,195px)]" />
         </div>
 
-        <div className="flex flex-1 flex-col items-center justify-center text-center animate-fade-in">
-          <div className="flex h-48 w-40 items-center justify-center rounded-t-full border-2 border-maroon bg-turquoise pt-6">
-            <span className="rounded-lg bg-cream px-4 pb-3 pt-1">
+        <div className="mx-auto flex w-full max-w-[420px] flex-1 flex-col items-center justify-center px-6 text-center animate-fade-in">
+          <div className="relative flex h-[200px] w-40 items-center justify-center pt-8">
+            <ArtImage name="welcome-arch" width={160} height={200} className="absolute inset-0 h-full w-full" />
+            <span className="relative rounded-lg bg-cream px-4 pb-3 pt-1">
               <span lang="ar" dir="rtl" className="font-arabic text-[64px] font-bold leading-none text-maroon">
                 سجى
               </span>
@@ -83,9 +84,9 @@ export default function Welcome({ onBegin }: Props) {
           </div>
         </div>
 
-        <div className="relative -mx-6 mt-8 h-24 shrink-0" aria-hidden="true">
-          <BloomCluster size={88} flip className="absolute bottom-0 left-0" />
-          <BloomCluster size={88} className="absolute bottom-0 right-0" />
+        <div className="mt-8 flex shrink-0 items-end justify-between" aria-hidden="true">
+          <ArtImage name="corner-bottom-left" width={195} height={150} className="h-auto w-[min(44vw,195px)]" />
+          <ArtImage name="corner-bottom-right" width={195} height={150} className="h-auto w-[min(44vw,195px)]" />
         </div>
       </div>
     </div>

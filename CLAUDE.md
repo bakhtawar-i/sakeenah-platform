@@ -114,6 +114,7 @@ Implementation notes:
 - Maximum content width: `420px`, mobile-first.
 - Primary buttons and feeling pills: pill shape.
 - Decorative artwork stays at screen edges, never behind text, inputs or pills, and all motion is disabled under `prefers-reduced-motion`.
+- Artwork lives in `public/art/` (`webp/` preferred, `svg/` fallback, `brand/` for icons and the wordmark). Render it with `src/components/art/ArtImage.tsx`, which is decorative (`aria-hidden`, no pointer events).
 
 Do not modify files under `src/components/ui/` unless explicitly requested.
 
