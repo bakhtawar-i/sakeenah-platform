@@ -134,7 +134,7 @@ export default function HomeScreen({ onResponse }: Props) {
         What feels closest right now?
       </p>
 
-      <div role="group" aria-labelledby="home-feelings-label" className="mt-2 flex flex-wrap justify-center gap-x-2 gap-y-3">
+      <div role="group" aria-labelledby="home-feelings-label" className="mt-2 flex flex-wrap justify-start gap-[10px]">
         {EMOTION_ROWS.map((row) =>
           row.map((e) => {
             const isActive = emotions.includes(e);
