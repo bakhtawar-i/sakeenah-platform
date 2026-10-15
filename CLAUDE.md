@@ -15,7 +15,7 @@ Sajaa is a responsive web app deployed on Vercel. It is not currently a native m
 - Backend: Supabase Auth, Postgres, RLS, RPCs, and Edge Functions
 - AI provider: Gemini through Supabase Edge Functions
 - Deployment: GitHub branches, Vercel Preview deployments, and Vercel production from `main`
-- Fonts: Cormorant Garamond for display text and Lora for body text
+- Fonts: Readex Pro for all Latin text; Aref Ruqaa for the Arabic wordmark only
 
 Do not migrate AI providers unless explicitly requested. Anthropic migration is deferred until retention or paid usage justifies it.
 
@@ -103,28 +103,17 @@ Recommended privacy wording:
 
 ## Design System
 
-### Colors
+`DESIGN.md` is the source of truth for the v3 visual design: palette, type, interface rules, artwork, motion and screen content. Read it before any UI change.
 
-```text
-Background:     #FDF6F0
-Surface:        #FFFAF7
-Primary text:   #2C1810
-Muted text:     rgba(44, 24, 16, 0.45)
-Border:         #E8D5C8
-Rose accent:    #C17C74
-Rose deep:      #A85E56
-Highlight bg:   #FAF3EE
-```
+Implementation notes:
 
-### Typography And Layout
-
-- Display font: Cormorant Garamond, usually italic and weight 300 or 400
-- Body font: Lora, weight 400 or 500
-- Maximum content width: `420px`
-- Mobile-first responsive web layout
-- Cards and inputs: `12px` border radius
-- Primary buttons and emotion chips: pill shape
-- Borders: subtle `0.5px` or `1px`
+- Palette tokens live in `src/index.css` (`--ink`, `--cream`, `--maroon`, `--clay`, `--clay-deep`, `--turquoise`, `--mint`, `--coral`, `--blush`, `--bloom-*`, `--hairline`) and map to Tailwind colors of the same names in `tailwind.config.ts`. shadcn semantic tokens (`--primary`, `--background`, ...) point at them.
+- Prefer token classes (`bg-maroon`, `text-clay`, `font-arabic`) over hardcoded hex in new or restyled code.
+- Fonts are loaded in `index.html`. `font-display` and `font-body` are both Readex Pro; `font-arabic` is Aref Ruqaa, subset to the سجى wordmark.
+- Never put white text on coral.
+- Maximum content width: `420px`, mobile-first.
+- Primary buttons and feeling pills: pill shape.
+- Decorative artwork stays at screen edges, never behind text, inputs or pills, and all motion is disabled under `prefers-reduced-motion`.
 
 Do not modify files under `src/components/ui/` unless explicitly requested.
 

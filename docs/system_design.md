@@ -48,7 +48,7 @@ Sajaa helps Muslims write one daily reflection, optionally tag emotions, receive
 | Layer | Technology | Notes |
 |-------|------------|-------|
 | Frontend | React 18, TypeScript, Vite | SPA; mobile-first, max-width 420px |
-| Styling | Tailwind CSS, shadcn/ui | Cormorant Garamond + Lora fonts |
+| Styling | Tailwind CSS, shadcn/ui | Readex Pro + Aref Ruqaa (wordmark) fonts; see DESIGN.md |
 | Auth | Supabase Auth | Email/password with verification |
 | Database | Supabase Postgres | RLS on all user data |
 | Server logic | Supabase Edge Functions (Deno) | LLM orchestration, no client API keys |
