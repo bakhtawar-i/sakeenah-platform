@@ -136,6 +136,8 @@ const Index = () => {
 
   // The Response screen continues the Home flow, so Home stays the current nav item (as in the mockups).
   const onHome = screen === "home" || screen === "response";
+  // Home, Response and Journal share the animated Home artwork and start right under the header.
+  const homeArt = onHome || screen === "journal";
 
   if (authLoading) {
     return (
@@ -170,7 +172,7 @@ const Index = () => {
     <>
     {/* While the Welcome is open the page behind it is inert: not focusable or clickable, but still mounted. */}
     <div {...(welcomeOpen ? { inert: "", "aria-hidden": true } : {})}>
-    <ScreenFrame art={onHome ? "home" : "corners"}>
+    <ScreenFrame art={homeArt ? "home" : "corners"}>
       <header className="sticky top-0 z-10 bg-cream/95 backdrop-blur-sm">
         <div className="flex h-[72px] items-center justify-between px-5">
           <h1 className="font-display text-[21px] font-semibold leading-none text-maroon">
@@ -215,7 +217,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className={`flex-1 px-5 pb-7 ${onHome ? "pt-0" : "pt-9"}`}>
+      <main className={`flex-1 px-5 pb-7 ${homeArt ? "pt-0" : "pt-9"}`}>
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
           <ResponseScreen
