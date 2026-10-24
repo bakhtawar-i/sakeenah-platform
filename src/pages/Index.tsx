@@ -23,6 +23,11 @@ const Index = () => {
   const [lastEntry, setLastEntry] = useState<JournalEntry | null>(null);
   const [signUpEmail, setSignUpEmail] = useState("");
 
+  // Each screen opens at its top, not at the scroll position the previous screen was left at.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [screen]);
+
   useEffect(() => {
     let resolved = false;
 
@@ -136,8 +141,8 @@ const Index = () => {
 
   // The Response screen continues the Home flow, so Home stays the current nav item (as in the mockups).
   const onHome = screen === "home" || screen === "response";
-  // Home, Response and Journal share the animated Home artwork and start right under the header.
-  const homeArt = onHome || screen === "journal";
+  // The account screens sit under the header with Sign in as the current nav item.
+  const onAuth = screen === "signin" || screen === "signup" || screen === "confirm-email" || screen === "reset-password";
 
   if (authLoading) {
     return (
@@ -149,30 +154,12 @@ const Index = () => {
     );
   }
 
-  if (screen === "signup") {
-    return <SignUpPrompt onSignUpSuccess={handleSignUpSuccess} onSignIn={() => setScreen("signin")} />;
-  }
-  if (screen === "signin") {
-    return (
-      <SignInScreen
-        onSignInSuccess={handleSignInSuccess}
-        onSignUp={() => setScreen("signup")}
-        onForgotPassword={() => setScreen("reset-password")}
-      />
-    );
-  }
-  if (screen === "confirm-email") {
-    return <EmailConfirmationScreen email={signUpEmail} onBackToSignUp={() => setScreen("signup")} />;
-  }
-  if (screen === "reset-password") {
-    return <PasswordResetScreen onBackToSignIn={() => setScreen("signin")} />;
-  }
-
   return (
     <>
     {/* While the Welcome is open the page behind it is inert: not focusable or clickable, but still mounted. */}
     <div {...(welcomeOpen ? { inert: "", "aria-hidden": true } : {})}>
-    <ScreenFrame art={homeArt ? "home" : "corners"}>
+    {/* Every screen here uses the animated Home artwork and starts right under the header. */}
+    <ScreenFrame art="home">
       <header className="sticky top-0 z-10 bg-cream/95 backdrop-blur-sm">
         <div className="flex h-[72px] items-center justify-between px-5">
           <h1 className="font-display text-[21px] font-semibold leading-none text-maroon">
@@ -209,7 +196,7 @@ const Index = () => {
                 Sign out
               </button>
             ) : (
-              <button type="button" onClick={() => setScreen("signin")} className={navLinkClass(false)}>
+              <button type="button" onClick={() => setScreen("signin")} aria-current={onAuth ? "page" : undefined} className={navLinkClass(onAuth)}>
                 Sign in
               </button>
             )}
@@ -217,7 +204,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className={`flex-1 px-5 pb-7 ${homeArt ? "pt-0" : "pt-9"}`}>
+      <main className="flex-1 px-5 pb-7">
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
           <ResponseScreen
@@ -230,6 +217,16 @@ const Index = () => {
           />
         )}
         {screen === "journal" && <JournalScreen onNavigateHome={() => setScreen("home")} />}
+        {screen === "signin" && (
+          <SignInScreen
+            onSignInSuccess={handleSignInSuccess}
+            onSignUp={() => setScreen("signup")}
+            onForgotPassword={() => setScreen("reset-password")}
+          />
+        )}
+        {screen === "signup" && <SignUpPrompt onSignUpSuccess={handleSignUpSuccess} onSignIn={() => setScreen("signin")} />}
+        {screen === "confirm-email" && <EmailConfirmationScreen email={signUpEmail} onBackToSignUp={() => setScreen("signup")} />}
+        {screen === "reset-password" && <PasswordResetScreen onBackToSignIn={() => setScreen("signin")} />}
       </main>
 
       <footer className="px-5 pb-4 text-center">

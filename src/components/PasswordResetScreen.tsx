@@ -1,6 +1,7 @@
 import { useState } from "react";
-import ScreenFrame from "@/components/layout/ScreenFrame";
 import { resetPassword } from "@/lib/auth";
+import { AUTH_HEADING, AUTH_SUBLINE_NARROW, AuthField, TextLink } from "@/components/auth/AuthParts";
+import { PRIMARY } from "@/components/reflection/styles";
 
 interface Props {
   onBackToSignIn: () => void;
@@ -29,107 +30,48 @@ export default function PasswordResetScreen({ onBackToSignIn }: Props) {
   };
 
   return (
-    <ScreenFrame contentClassName="items-center justify-center px-8 py-10">
+    <div className="animate-fade-in pt-6">
+      <h2 className={AUTH_HEADING}>Reset password</h2>
 
-      <div className="max-w-sm w-full relative z-10 animate-fade-in">
-        <h2
-          className="font-display text-center"
-          style={{ fontSize: '28px', fontWeight: 600, color: 'hsl(var(--maroon))', marginBottom: '16px' }}
-        >
-          Reset password
-        </h2>
-
-        {sent ? (
-          <div className="text-center">
-            <p
-              className="font-body"
-              style={{ fontSize: '14px', color: 'hsl(var(--clay))', lineHeight: '1.8', marginBottom: '32px' }}
-            >
-              If an account exists with{" "}
-              <span style={{ color: 'hsl(var(--ink))' }}>{email}</span>,
-              you'll receive a password reset link shortly.
+      {sent ? (
+        <>
+          <div className="mt-[30px] rounded-[20px] border border-hairline bg-white px-[22px] py-[26px]">
+            <p role="status" className="break-words text-[16.5px] leading-[1.6] text-ink">
+              If an account exists with <b className="font-semibold">{email}</b>, you'll receive a password reset link shortly.
             </p>
-            <button
-              onClick={onBackToSignIn}
-              className="w-full font-body font-medium"
-              style={{
-                background: 'hsl(var(--maroon))',
-                color: 'hsl(var(--cream))',
-                borderRadius: '100px',
-                padding: '14px',
-                fontSize: '14px',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              Back to sign in
-            </button>
           </div>
-        ) : (
-          <>
-            <p
-              className="font-body text-center"
-              style={{ fontSize: '14px', color: 'hsl(var(--clay))', lineHeight: '1.8', marginBottom: '32px' }}
-            >
-              Enter your email and we'll send you a link to reset your password.
-            </p>
-
-            {error && (
-              <p className="font-body text-center" style={{ fontSize: '12px', color: 'hsl(var(--maroon))', marginBottom: '16px' }}>
-                {error}
-              </p>
-            )}
-
-            <div style={{ marginBottom: '24px' }}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address"
-                className="w-full font-body"
-                style={{
-                  background: '#FFFFFF',
-                  border: '0.5px solid hsl(var(--hairline))',
-                  borderRadius: '12px',
-                  padding: '14px 16px',
-                  fontSize: '14px',
-                  color: 'hsl(var(--ink))',
-                  outline: 'none',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--maroon))')}
-                onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--hairline))')}
-              />
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!email.trim() || loading}
-              className="w-full font-body font-medium"
-              style={{
-                background: !email.trim() || loading ? 'hsl(var(--maroon) / 0.4)' : 'hsl(var(--maroon))',
-                color: 'hsl(var(--cream))',
-                borderRadius: '100px',
-                padding: '14px',
-                fontSize: '14px',
-                border: 'none',
-                cursor: !email.trim() || loading ? 'default' : 'pointer',
-              }}
-            >
-              {loading ? "Sending..." : "Send reset link"}
-            </button>
-          </>
-        )}
-
-        <p className="text-center" style={{ marginTop: '20px' }}>
-          <button
-            onClick={onBackToSignIn}
-            className="font-body"
-            style={{ fontSize: '13px', color: 'hsl(var(--clay))', background: 'none', border: 'none', cursor: 'pointer' }}
-          >
+          <button type="button" onClick={onBackToSignIn} className={`mt-[22px] ${PRIMARY}`}>
             Back to sign in
           </button>
-        </p>
-      </div>
-    </ScreenFrame>
+        </>
+      ) : (
+        <form
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSubmit();
+          }}
+        >
+          <p className={AUTH_SUBLINE_NARROW}>Enter your email and we'll send you a link to reset your password.</p>
+          <AuthField
+            className="mt-[30px]"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={error || undefined}
+          />
+          <button type="submit" disabled={!email.trim() || loading} className={`mt-[26px] ${PRIMARY}`}>
+            {loading ? "Sending..." : "Send reset link"}
+          </button>
+          <TextLink onClick={onBackToSignIn} className="mt-[18px]">
+            Back to sign in
+          </TextLink>
+        </form>
+      )}
+    </div>
   );
 }
