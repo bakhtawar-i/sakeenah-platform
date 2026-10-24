@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import ArtImage from "@/components/art/ArtImage";
+import MotionArt from "@/components/art/MotionArt";
 import { cn } from "@/lib/utils";
 import { COLUMN_CLASS } from "@/components/layout/column";
 
@@ -21,7 +22,7 @@ export default function ScreenFrame({ children, contentClassName, art = "corners
     <div className={cn(COLUMN_CLASS, "flex min-h-[100dvh] flex-col min-[431px]:min-h-[calc(100dvh-48px)]")}>
       {art === "home" && (
         // Native 390px size, anchored top-right: its ink sits right of the heading and above the textarea.
-        <ArtImage name="home-art-top" width={390} height={260} className="absolute right-0 top-0 w-[390px] max-w-none" />
+        <MotionArt name="home-art-top" className="absolute right-0 top-0 w-[390px] max-w-none" />
       )}
 
       <div className={cn("relative flex flex-1 flex-col", contentClassName)}>{children}</div>
@@ -30,7 +31,7 @@ export default function ScreenFrame({ children, contentClassName, art = "corners
         <>
           {/* Bottom art scales to the column width; this band reserves its full height. */}
           <div aria-hidden="true" className="aspect-[390/280] w-full shrink-0" />
-          <ArtImage name="home-art-bottom" width={390} height={280} className="absolute bottom-0 left-0 w-full" />
+          <MotionArt name="home-art-bottom" className="absolute bottom-0 left-0 w-full" />
         </>
       ) : (
         <>
