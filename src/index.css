@@ -209,18 +209,21 @@
     animation: art-wind 4.2s linear infinite;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .art-sway,
-    .art-wind {
-      animation: none;
-    }
-  }
-
   .animate-fade-in {
     animation: fade-in 0.5s ease-out forwards;
   }
 
   .animate-pulse-soft {
     animation: pulse-soft 2s ease-in-out infinite;
+  }
+
+  /* Last in the layer so it wins over the animation rules above. */
+  @media (prefers-reduced-motion: reduce) {
+    .art-sway,
+    .art-wind,
+    .animate-fade-in,
+    .animate-pulse-soft {
+      animation: none;
+    }
   }
 }
