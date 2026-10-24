@@ -134,6 +134,9 @@ const Index = () => {
   const navLinkClass = (active: boolean) =>
     `font-body border-b-2 pb-[3px] leading-normal transition-colors hover:text-maroon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon ${active ? "border-coral text-maroon" : "border-transparent text-clay-deep"}`;
 
+  // The Response screen continues the Home flow, so Home stays the current nav item (as in the mockups).
+  const onHome = screen === "home" || screen === "response";
+
   if (authLoading) {
     return (
       <ScreenFrame contentClassName="items-center justify-center">
@@ -167,7 +170,7 @@ const Index = () => {
     <>
     {/* While the Welcome is open the page behind it is inert: not focusable or clickable, but still mounted. */}
     <div {...(welcomeOpen ? { inert: "", "aria-hidden": true } : {})}>
-    <ScreenFrame art={screen === "home" ? "home" : "corners"}>
+    <ScreenFrame art={onHome ? "home" : "corners"}>
       <header className="sticky top-0 z-10 bg-cream/95 backdrop-blur-sm">
         <div className="flex h-[72px] items-center justify-between px-5">
           <h1 className="font-display text-[21px] font-semibold leading-none text-maroon">
@@ -185,7 +188,7 @@ const Index = () => {
             </button>
           </h1>
           <nav className="flex items-center gap-[18px] text-[15px] font-medium">
-            <button type="button" onClick={() => setScreen("home")} aria-current={screen === "home" ? "page" : undefined} className={navLinkClass(screen === "home")}>
+            <button type="button" onClick={() => setScreen("home")} aria-current={onHome ? "page" : undefined} className={navLinkClass(onHome)}>
               Home
             </button>
             <button type="button" onClick={() => setScreen("journal")} aria-current={screen === "journal" ? "page" : undefined} className={navLinkClass(screen === "journal")}>
@@ -212,7 +215,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className={`flex-1 px-5 pb-7 ${screen === "home" ? "pt-0" : "pt-9"}`}>
+      <main className={`flex-1 px-5 pb-7 ${onHome ? "pt-0" : "pt-9"}`}>
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
           <ResponseScreen
@@ -220,6 +223,7 @@ const Index = () => {
             isAuthenticated={Boolean(user)}
             onSaveReflection={() => setScreen("signup")}
             onViewJournal={() => setScreen("journal")}
+            onGoHome={() => setScreen("home")}
             onEntryUpdate={handleEntryUpdate}
           />
         )}
