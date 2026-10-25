@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import ScreenFrame from "@/components/layout/ScreenFrame";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { AUTH_HEADING, AUTH_SUBLINE, AuthField } from "@/components/auth/AuthParts";
+import { PRIMARY } from "@/components/reflection/styles";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -54,107 +56,53 @@ export default function ResetPasswordPage() {
     setTimeout(() => navigate("/"), 2000);
   };
 
-  if (!isRecovery) {
-    return (
-      <ScreenFrame contentClassName="items-center justify-center px-8">
-        <p className="font-body" style={{ color: 'hsl(var(--clay))', fontSize: '14px' }}>
-          Invalid or expired reset link.
-        </p>
-      </ScreenFrame>
-    );
-  }
-
+  // This route sits outside the app's header, so the column starts with the same 96px of space above the heading.
   return (
-    <ScreenFrame contentClassName="items-center justify-center px-8 py-10">
+    <ScreenFrame art="home" contentClassName="px-5 pt-[96px]">
+      {!isRecovery ? (
+        <p className="text-[15px] leading-[1.5] text-clay-deep">Invalid or expired reset link.</p>
+      ) : (
+        <div className="animate-fade-in">
+          <h1 className={AUTH_HEADING}>Set new password</h1>
 
-      <div className="max-w-sm w-full relative z-10 animate-fade-in">
-        <h2
-          className="font-display text-center"
-          style={{ fontSize: '28px', fontWeight: 600, color: 'hsl(var(--maroon))', marginBottom: '16px' }}
-        >
-          Set new password
-        </h2>
-
-        {success ? (
-          <p className="font-body text-center" style={{ fontSize: '14px', color: 'hsl(var(--clay))', lineHeight: '1.8' }}>
-            Password updated. Redirecting...
-          </p>
-        ) : (
-          <>
-            <p
-              className="font-body text-center"
-              style={{ fontSize: '14px', color: 'hsl(var(--clay))', lineHeight: '1.8', marginBottom: '32px' }}
-            >
-              Enter your new password below.
+          {success ? (
+            <p role="status" className={AUTH_SUBLINE}>
+              Password updated. Redirecting...
             </p>
-
-            {error && (
-              <p className="font-body text-center" style={{ fontSize: '12px', color: 'hsl(var(--maroon))', marginBottom: '16px' }}>
-                {error}
-              </p>
-            )}
-
-            <div style={{ marginBottom: '16px' }}>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="New password (min. 8 characters)"
-                className="w-full font-body"
-                style={{
-                  background: '#FFFFFF',
-                  border: '0.5px solid hsl(var(--hairline))',
-                  borderRadius: '12px',
-                  padding: '14px 16px',
-                  fontSize: '14px',
-                  color: 'hsl(var(--ink))',
-                  outline: 'none',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--maroon))')}
-                onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--hairline))')}
-              />
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-                className="w-full font-body"
-                style={{
-                  background: '#FFFFFF',
-                  border: '0.5px solid hsl(var(--hairline))',
-                  borderRadius: '12px',
-                  padding: '14px 16px',
-                  fontSize: '14px',
-                  color: 'hsl(var(--ink))',
-                  outline: 'none',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = 'hsl(var(--maroon))')}
-                onBlur={(e) => (e.target.style.borderColor = 'hsl(var(--hairline))')}
-              />
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!password || loading}
-              className="w-full font-body font-medium"
-              style={{
-                background: !password || loading ? 'hsl(var(--maroon) / 0.4)' : 'hsl(var(--maroon))',
-                color: 'hsl(var(--cream))',
-                borderRadius: '100px',
-                padding: '14px',
-                fontSize: '14px',
-                border: 'none',
-                cursor: !password || loading ? 'default' : 'pointer',
+          ) : (
+            <form
+              noValidate
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleSubmit();
               }}
             >
-              {loading ? "Updating..." : "Update password"}
-            </button>
-          </>
-        )}
-      </div>
+              <p className={AUTH_SUBLINE}>Enter your new password below.</p>
+              <AuthField
+                className="mt-[30px]"
+                label="New password"
+                type="password"
+                autoComplete="new-password"
+                hint="At least 8 characters."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <AuthField
+                className="mt-[22px]"
+                label="Confirm new password"
+                type="password"
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                error={error || undefined}
+              />
+              <button type="submit" disabled={!password || loading} className={`mt-[26px] ${PRIMARY}`}>
+                {loading ? "Updating..." : "Update password"}
+              </button>
+            </form>
+          )}
+        </div>
+      )}
     </ScreenFrame>
   );
 }

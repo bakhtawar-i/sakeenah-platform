@@ -71,6 +71,7 @@ export default {
           orange: "hsl(var(--bloom-orange))",
         },
         hairline: "hsl(var(--hairline))",
+        danger: "hsl(var(--danger))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

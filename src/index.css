@@ -60,6 +60,7 @@
     --bloom-red: 349.1 63.9% 48.8%;    /* #CC2D4A */
     --bloom-orange: 10.3 86.2% 62.9%;  /* #F26B4F */
     --hairline: 15 23.3% 83.1%;        /* #DECFCA - thin borders, derived from clay on cream */
+    --danger: 353.1 67.2% 38.2%;       /* #A3202F - form errors (border and message) */
 
     /* How far artwork flowers and leaves swing back. Lower it to calm the motion; 0deg stops the sway. */
     --sway-angle: 4.5deg;
