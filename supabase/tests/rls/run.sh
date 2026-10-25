@@ -139,6 +139,7 @@ psql -X -q -v ON_ERROR_STOP=1 -d sajaa -f $REPO/supabase/proposed/20261025130000
 psql -X -q -v ON_ERROR_STOP=1 -d sajaa -f $REPO/supabase/rollbacks/20261025120000_scope_anonymous_select_policies.sql >/dev/null || exit 1
 check "rollback restores the original policy definitions" "$(admin "$POLICIES")" "$ORIGINAL_POLICIES"
 psql -X -q -v ON_ERROR_STOP=1 -d sajaa -f $REPO/supabase/migrations/20261025120000_scope_anonymous_select_policies.sql >/dev/null && check "fix applies again cleanly after rollback" ok ok
+psql -X -q -v ON_ERROR_STOP=1 -d sajaa -f $REPO/supabase/migrations/20261025120000_scope_anonymous_select_policies.sql >/dev/null 2>&1 && check "fix can be applied twice (SQL Editor, then db push)" ok ok
 
 echo; echo "$PASS passed, $FAIL failed"
 [ "$FAIL" = 0 ]
