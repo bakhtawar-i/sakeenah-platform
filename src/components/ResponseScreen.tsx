@@ -147,7 +147,9 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
     }
   };
 
-  const save = isAuthenticated ? onViewJournal : onSaveReflection;
+  // Every exchange is already stored by the server, so these buttons only leave the conversation:
+  // to the Journal when signed in, or to create an account (which claims the entry) when not.
+  const finish = isAuthenticated ? onViewJournal : onSaveReflection;
 
   return (
     <div className="animate-fade-in pt-6">
@@ -212,8 +214,8 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
           <p className="mt-[18px] rounded-[16px] bg-mint px-4 py-[14px] text-[15px] leading-[1.5] text-ink">
             This was today's reflection. Rest well, and come back whenever you need to set something down.
           </p>
-          <button type="button" onClick={save} className={`mt-6 ${PRIMARY}`}>
-            Save to journal
+          <button type="button" onClick={finish} className={`mt-6 ${PRIMARY}`}>
+            Done for today
           </button>
           <button type="button" onClick={onGoHome} className={`mt-3 ${SECONDARY}`}>
             Back to Home
@@ -246,8 +248,8 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
               Continue
             </button>
           )}
-          <button type="button" onClick={save} className={`${failed ? "mt-[22px]" : "mt-3"} ${SECONDARY}`}>
-            Save to journal and finish
+          <button type="button" onClick={finish} className={`${failed ? "mt-[22px]" : "mt-3"} ${SECONDARY}`}>
+            Finish
           </button>
         </>
       )}

@@ -231,7 +231,7 @@ export default function JournalScreen({ onNavigateHome }: Props) {
           <div className={`mt-9 ${MESSAGE_CARD}`}>
             <p className="text-[17px] font-semibold leading-[1.35] text-maroon">Nothing here yet.</p>
             <p className="mt-2 text-[15px] leading-[1.55] text-clay-deep">
-              When you finish a reflection and save it, it will be here for you to look back on.
+              Your reflections will gather here once you write your first one.
             </p>
             {onNavigateHome && (
               <button type="button" onClick={onNavigateHome} className={`mt-[22px] ${PRIMARY}`}>
