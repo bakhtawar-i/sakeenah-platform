@@ -77,6 +77,66 @@ const IMMEDIATE_DANGER_RESPONSE = `${STANDARD_CRISIS_RESPONSE} If you may act on
 
 const MEMORY_ENTRY_MAX_LENGTH = 500;
 
+const MAX_TURNS = 4;
+
+// Request caps, checked before any model call. They sit above what the site allows today
+// (250 or 300 characters for a reflection; no cap on follow-ups on the live site) so no current
+// user is rejected. To be lowered to 300 and 1000 once the new frontend is live.
+const REFLECTION_MAX_CHARS = 600;
+const FOLLOW_UP_MAX_CHARS = 4000;
+// The first message also carries the "Journal entry:" wrapper and the emotion labels.
+const FIRST_MESSAGE_MAX_CHARS = REFLECTION_MAX_CHARS + 400;
+// Earlier replies are sent back by the browser with each follow-up; real ones are about 150 words.
+const ASSISTANT_MESSAGE_MAX_CHARS = 4000;
+// The app offers 16 labels, the longest 11 characters.
+const MAX_EMOTION_LABELS = 20;
+const EMOTION_LABEL_MAX_CHARS = 40;
+
+const REJECTIONS = {
+  too_long: { status: 413, message: "That's a little too long. Please shorten it and try again." },
+  reflection_complete: { status: 409, message: "This was today's reflection. Come back tomorrow." },
+  turn_out_of_sync: { status: 409, message: "This reflection has changed since the page loaded. Please refresh to continue." },
+  entry_not_found: { status: 404, message: "We couldn't find this reflection. Please refresh and try again." },
+} as const;
+
+type RejectionCode = keyof typeof REJECTIONS;
+
+// Logs only the code, never what was written.
+function reject(code: RejectionCode): Response {
+  console.warn("sakeena-reflect-v2 rejected:", code);
+  const { status, message } = REJECTIONS[code];
+  return new Response(JSON.stringify({ error: message, code }), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+/** Every message the browser sends goes to the model, so each one is capped, not just the newest. */
+function exceedsLengthCaps(
+  turnNumber: number,
+  messages: IncomingMessage[],
+  entryText: unknown,
+  emotionLabels: string[],
+): boolean {
+  if (messages.length > turnNumber * 2 - 1) return true;
+
+  const tooLongMessage = messages.some((message, index) => {
+    const length = contentToText(message.content).length;
+    if (index === 0) return length > FIRST_MESSAGE_MAX_CHARS;
+    if (message.role === "assistant" || message.role === "model") return length > ASSISTANT_MESSAGE_MAX_CHARS;
+    return length > FOLLOW_UP_MAX_CHARS;
+  });
+  if (tooLongMessage) return true;
+
+  if (turnNumber === 1) {
+    if (typeof entryText === "string" && entryText.trim().length > REFLECTION_MAX_CHARS) return true;
+    if (emotionLabels.length > MAX_EMOTION_LABELS) return true;
+    if (emotionLabels.some((label) => label.length > EMOTION_LABEL_MAX_CHARS)) return true;
+  }
+
+  return false;
+}
+
 type IncomingMessage = {
   role?: string;
   content?: unknown;
@@ -272,8 +332,13 @@ serve(async (req) => {
       emotionLabels = [],
     } = await req.json() as ReflectRequest;
 
-    if (!Number.isInteger(turnNumber) || (turnNumber as number) < 1 || (turnNumber as number) > 4) {
+    if (!Number.isInteger(turnNumber) || (turnNumber as number) < 1) {
       throw new Error("Invalid turn number");
+    }
+
+    // A fifth exchange is never valid, whatever entry it names.
+    if ((turnNumber as number) > MAX_TURNS) {
+      return reject("reflection_complete");
     }
 
     if (!Array.isArray(messages)) {
@@ -357,6 +422,33 @@ serve(async (req) => {
       return new Response(JSON.stringify({ response: crisisResponse, entryId: persistedEntryId }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Limits are checked after crisis screening, so crisis support is answered exactly as before,
+    // and before the model call, so a rejected request costs nothing.
+    if (exceedsLengthCaps(normalizedTurnNumber, messages as IncomingMessage[], entryText, emotionLabels)) {
+      return reject("too_long");
+    }
+
+    if (normalizedTurnNumber > 1) {
+      // The turn count comes from the stored entry, scoped to this account or browser session,
+      // never from the turn number the browser sends.
+      const { data: storedEntry, error: storedEntryError } = await supabase
+        .rpc("get_session_entries", { p_session_id: sessionId })
+        .select("id, turn_count, status")
+        .eq("id", normalizedEntryId)
+        .maybeSingle();
+
+      if (storedEntryError) throw storedEntryError;
+      if (!storedEntry) return reject("entry_not_found");
+
+      const storedTurns = typeof storedEntry.turn_count === "number" ? storedEntry.turn_count : 0;
+      if (storedEntry.status === "completed" || storedTurns >= MAX_TURNS) {
+        return reject("reflection_complete");
+      }
+      if (normalizedTurnNumber !== storedTurns + 1) {
+        return reject("turn_out_of_sync");
+      }
     }
 
     if (normalizedTurnNumber === 1) {
