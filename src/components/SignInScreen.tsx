@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { signIn } from "@/lib/auth";
-import { AUTH_HEADING, AUTH_SUBLINE, AuthField, TextLink } from "@/components/auth/AuthParts";
+import { AUTH_HEADING, AUTH_SUBLINE, AuthField, ResendConfirmation, TextLink } from "@/components/auth/AuthParts";
 import { PRIMARY, SECONDARY } from "@/components/reflection/styles";
 
 interface Props {
@@ -17,6 +17,8 @@ export default function SignInScreen({ onSignInSuccess, onSignUp, onForgotPasswo
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  // Set when the account exists but its email isn't confirmed yet: offer the link again instead of an error.
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
 
   const validate = () => {
     const e: typeof errors = {};
@@ -30,8 +32,14 @@ export default function SignInScreen({ onSignInSuccess, onSignUp, onForgotPasswo
     if (!validate() || loading) return;
     setLoading(true);
     setErrors({});
+    setUnconfirmedEmail(null);
 
     const { error } = await signIn(email.trim(), password);
+    if (error && (error.code === "email_not_confirmed" || error.message === "Email not confirmed")) {
+      setUnconfirmedEmail(email.trim());
+      setLoading(false);
+      return;
+    }
     if (error) {
       setErrors({ general: error.message === "Invalid login credentials" ? INVALID_CREDENTIALS : error.message });
       setLoading(false);
@@ -74,6 +82,15 @@ export default function SignInScreen({ onSignInSuccess, onSignUp, onForgotPasswo
         onChange={(e) => setPassword(e.target.value)}
         error={errors.password ?? errors.general}
       />
+
+      {unconfirmedEmail && (
+        <div className="mt-[22px] rounded-[16px] border border-hairline bg-white px-4 py-[14px]">
+          <p role="alert" className="text-[15px] leading-[1.5] text-clay-deep">
+            Please confirm your email first. We can send the link again.
+          </p>
+          <ResendConfirmation email={unconfirmedEmail} className="mt-3" />
+        </div>
+      )}
 
       <button type="submit" disabled={loading} className={`mt-[26px] ${PRIMARY}`}>
         {loading ? "Signing in..." : "Sign in"}

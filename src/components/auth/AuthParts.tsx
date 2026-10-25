@@ -1,4 +1,6 @@
-import { useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { SECONDARY } from "@/components/reflection/styles";
 
 /** Page heading and subline shared by the sign-in screens (sizes from the v3 auth mockups). */
 export const AUTH_HEADING = "font-display max-w-[min(230px,calc(100%-117px))] text-[30px] font-semibold leading-[1.2] text-maroon";
@@ -76,6 +78,51 @@ export function AuthField({ label, error, hint, className = "", type = "text", .
           {error}
         </p>
       )}
+    </div>
+  );
+}
+
+// How long "Send the email again" stays unavailable after a send.
+const RESEND_WAIT_MS = 30_000;
+
+/**
+ * "Send the email again" for an account whose email isn't confirmed yet: resends the sign-up link
+ * (supabase.auth.resend, as before), then waits about 30 seconds before it can be pressed again.
+ */
+export function ResendConfirmation({ email, className = "" }: { email: string; className?: string }) {
+  const [sending, setSending] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+  const [result, setResult] = useState<"sent" | "failed" | null>(null);
+  const timer = useRef<number>();
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const resend = async () => {
+    if (sending || waiting) return;
+    setSending(true);
+    setResult(null);
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    setSending(false);
+    setResult(error ? "failed" : "sent");
+    if (!error) {
+      setWaiting(true);
+      timer.current = window.setTimeout(() => setWaiting(false), RESEND_WAIT_MS);
+    }
+  };
+
+  return (
+    <div className={className}>
+      <button
+        type="button"
+        onClick={resend}
+        disabled={sending || waiting}
+        className={`${SECONDARY} disabled:cursor-not-allowed disabled:opacity-[0.55]`}
+      >
+        {sending ? "Sending..." : "Send the email again"}
+      </button>
+      <p role="status" className={`text-center text-[14px] leading-[1.5] text-clay-deep ${result ? "mt-3" : ""}`}>
+        {result === "sent" ? "Sent again." : result === "failed" ? "That didn't send. Please try again in a moment." : ""}
+      </p>
     </div>
   );
 }
