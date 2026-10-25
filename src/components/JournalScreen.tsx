@@ -20,6 +20,35 @@ interface EntryRow {
 
 interface Props {
   onNavigateHome?: () => void;
+  isAuthenticated: boolean;
+  onSignIn: () => void;
+}
+
+/**
+ * Where entries live, as the code does it: get_session_entries returns the account's entries when
+ * signed in, or the ones saved under this browser's session ID (src/lib/session.ts) when not.
+ */
+function StorageNote({ isAuthenticated, onSignIn }: { isAuthenticated: boolean; onSignIn: () => void }) {
+  return (
+    // 270px keeps the first lines left of the top-right wind line and flowers.
+    <p className="mt-2 max-w-[270px] text-[13px] leading-[1.5] text-clay">
+      {isAuthenticated ? (
+        "Saved to your account, so you can open them on any device you sign in on."
+      ) : (
+        <>
+          Saved on our server and linked to this browser. If you clear your browser data or switch device, you may not be able to
+          open them.{" "}
+          <button
+            type="button"
+            onClick={onSignIn}
+            className="rounded-sm font-medium text-maroon underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon"
+          >
+            Sign in to keep them with your account.
+          </button>
+        </>
+      )}
+    </p>
+  );
 }
 
 // Past this many entries, earlier ones are grouped by month instead of one "Earlier" band.
@@ -162,7 +191,7 @@ function EntryView({ entry, onBack }: { entry: EntryRow; onBack: () => void }) {
   );
 }
 
-export default function JournalScreen({ onNavigateHome }: Props) {
+export default function JournalScreen({ onNavigateHome, isAuthenticated, onSignIn }: Props) {
   const [entries, setEntries] = useState<EntryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -228,6 +257,7 @@ export default function JournalScreen({ onNavigateHome }: Props) {
       ) : entries.length === 0 ? (
         <>
           <p className={SUBLINE}>Your past reflections will gather here.</p>
+          <StorageNote isAuthenticated={isAuthenticated} onSignIn={onSignIn} />
           <div className={`mt-9 ${MESSAGE_CARD}`}>
             <p className="text-[17px] font-semibold leading-[1.35] text-maroon">Nothing here yet.</p>
             <p className="mt-2 text-[15px] leading-[1.55] text-clay-deep">
@@ -243,6 +273,7 @@ export default function JournalScreen({ onNavigateHome }: Props) {
       ) : (
         <>
           <p className={SUBLINE}>Your past reflections, newest first.</p>
+          <StorageNote isAuthenticated={isAuthenticated} onSignIn={onSignIn} />
           {groupEntries(entries, now).map((group, i) => (
             <section key={group.label} aria-label={group.label.toLowerCase()}>
               <h3 className={`${i === 0 ? "mt-[26px]" : "mt-[30px]"} text-[13px] font-medium leading-[normal] tracking-[0.04em] text-clay`}>{group.label}</h3>

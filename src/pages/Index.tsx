@@ -216,7 +216,9 @@ const Index = () => {
             onEntryUpdate={handleEntryUpdate}
           />
         )}
-        {screen === "journal" && <JournalScreen onNavigateHome={() => setScreen("home")} />}
+        {screen === "journal" && (
+          <JournalScreen onNavigateHome={() => setScreen("home")} isAuthenticated={Boolean(user)} onSignIn={() => setScreen("signin")} />
+        )}
         {screen === "signin" && (
           <SignInScreen
             onSignInSuccess={handleSignInSuccess}

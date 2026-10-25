@@ -214,7 +214,10 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
           <p className="mt-[18px] rounded-[16px] bg-mint px-4 py-[14px] text-[15px] leading-[1.5] text-ink">
             This was today's reflection. Rest well, and come back whenever you need to set something down.
           </p>
-          <button type="button" onClick={finish} className={`mt-6 ${PRIMARY}`}>
+          {!isAuthenticated && (
+            <p className="mt-6 text-center text-[13px] leading-[1.5] text-clay">Create an account to keep this reflection.</p>
+          )}
+          <button type="button" onClick={finish} className={`${isAuthenticated ? "mt-6" : "mt-3"} ${PRIMARY}`}>
             Done for today
           </button>
           <button type="button" onClick={onGoHome} className={`mt-3 ${SECONDARY}`}>
