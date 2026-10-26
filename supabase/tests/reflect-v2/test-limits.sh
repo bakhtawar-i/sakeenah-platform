@@ -8,6 +8,9 @@
 # Needs bash, curl and jq; works in Git Bash on Windows. Prints status codes, error codes and
 # timings only; never prints keys, passwords, tokens or model replies.
 #
+# DEBUG=1 also prints, for each request: the throwaway browser ID, whether it is valid, the length
+# of the key or token and body, curl's exit code and the HTTP status. Never the key, token or password.
+#
 # Cost: 4 Gemini calls signed out, plus 1 if signed in. Every rejection, and both crisis checks,
 # happen without a model call.
 #
@@ -30,7 +33,16 @@ need() {
 }
 need curl; need jq
 
-[ -n "${ANON_KEY:-}" ] || die "ANON_KEY is empty. Set it to the publishable (anon) key of the project:
+# clean VALUE: removes \r and \n. A value copied from a Windows file or terminal can end in \r\n,
+# and a \r inside an HTTP header makes curl refuse the request (curl: (43), HTTP 000).
+clean() { printf '%s' "$1" | tr -d '\r\n'; }
+# valid_id VALUE: true only for letters, digits and dashes, so an ID is always safe in a header.
+valid_id() { [[ "$1" =~ ^[A-Za-z0-9-]+$ ]]; }
+ANON_KEY=$(clean "${ANON_KEY:-}")
+TEST_EMAIL=$(clean "${TEST_EMAIL:-}")
+TEST_PASSWORD=$(clean "${TEST_PASSWORD:-}")
+
+[ -n "$ANON_KEY" ] || die "ANON_KEY is empty. Set it to the publishable (anon) key of the project:
   ANON_KEY=<key> ./test-limits.sh"
 URL=${SUPABASE_URL:-https://cyfslxhnkfglgpcxoycn.supabase.co}
 FN=${FN:-sakeena-reflect-v2-test}
@@ -44,26 +56,40 @@ rand_id() {
   command -v uuidgen >/dev/null 2>&1 && id=$(uuidgen 2>/dev/null | tr -dc 'A-Za-z0-9-')
   [ -n "$id" ] || { command -v openssl >/dev/null 2>&1 && id=$(openssl rand -hex 16 2>/dev/null | tr -dc 'A-Za-z0-9'); }
   [ -n "$id" ] || id=$(printf '%s%s%s' "$(date +%s%N 2>/dev/null)" "$RANDOM" "$RANDOM" | tr -dc 'A-Za-z0-9')
-  printf '%s' "$id" | tr 'A-Z' 'a-z'
+  printf '%s' "$id" | tr -d '\r\n' | tr 'A-Z' 'a-z'
 }
 # new_session VAR: puts a fresh throwaway browser ID in VAR and records it for the cleanup SQL.
 new_session() {
   local s
   s=$(rand_id) && [ -n "$s" ] || die "Could not generate a throwaway browser ID. Stopping before sending anything."
-  s="test-$s"; SESSIONS+=("$s"); printf -v "$1" '%s' "$s"
+  s="test-$s"
+  valid_id "$s" || die "Generated browser ID is not letters, digits and dashes only. Stopping before sending anything."
+  # Each throwaway browser must be a different one, or the cross-browser checks would test nothing.
+  for prev in "${SESSIONS[@]:-}"; do
+    [ "$prev" = "$s" ] && die "The ID generator returned the same ID twice. Stopping before sending anything with it."
+  done
+  SESSIONS+=("$s"); printf -v "$1" '%s' "$s"
 }
 TMP_BODY=$(mktemp); trap 'rm -f "$TMP_BODY"' EXIT
 
+REQ=0
 # call <x-session-id> <bearer> <json body>  ->  sets STATUS, BODY, MS
 call() {
-  local out
+  local out rc
   [ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ] || die "Refusing to send a request with an empty browser ID, key or body."
+  case "$1$2$ANON_KEY" in *$'\r'*|*$'\n'*) die "Refusing to send a request: a header value contains a line break." ;; esac
+  REQ=$((REQ+1))
   out=$(curl -sS -o "$TMP_BODY" -w "%{http_code} %{time_total}" --max-time 60 \
     "$URL/functions/v1/$FN" \
     -H "apikey: $ANON_KEY" -H "Authorization: Bearer $2" -H "x-session-id: $1" \
     -H "Content-Type: application/json" -d "$3")
+  rc=$?
   STATUS=${out%% *}; MS=$(awk "BEGIN{printf \"%d\", ${out##* } * 1000}")
   BODY=$(cat "$TMP_BODY")
+  if [ "${DEBUG:-}" = 1 ]; then
+    printf 'DEBUG #%s x-session-id=%s (%s chars, valid: %s) bearer: %s chars, body: %s bytes -> curl exit %s, HTTP %s\n' \
+      "$REQ" "$1" "${#1}" "$(valid_id "$1" && echo yes || echo NO)" "${#2}" "${#3}" "$rc" "$STATUS" >&2
+  fi
 }
 # tr -d '\r': some Windows builds of jq end lines with \r\n, which would break every comparison.
 field() { jq -r "$1 // empty" <<<"$BODY" 2>/dev/null | tr -d '\r'; }
@@ -100,6 +126,7 @@ call "$S1" "$ANON_KEY" "$(first_body "Test reflection: a long, tiring week.")"
 check "turn 1, normal request" 200
 ENTRY=$(field .entryId); REPLY1=$(field .response)
 [ -n "$ENTRY" ] || die "Turn 1 returned no entryId (HTTP $STATUS), so the follow-up checks can't run. Stopping."
+valid_id "$ENTRY" || die "Turn 1 returned an entryId that is not letters, digits and dashes only. Stopping."
 MSGS=$(jq -nc --arg t "Test reflection: a long, tiring week." --arg a "$REPLY1" \
   '[{role: "user", content: ("Journal entry: " + $t + "\n\nEmotion labels: Tired")}, {role: "assistant", content: $a}]')
 
@@ -166,7 +193,7 @@ if [ -n "${TEST_EMAIL:-}" ] && [ -n "${TEST_PASSWORD:-}" ]; then
   echo "== Signed in: throwaway account"
   TOKEN=$(jq -nc --arg e "$TEST_EMAIL" --arg p "$TEST_PASSWORD" '{email: $e, password: $p}' \
     | curl -sS "$URL/auth/v1/token?grant_type=password" -H "apikey: $ANON_KEY" -H "Content-Type: application/json" -d @- \
-    | jq -r '.access_token // empty' | tr -d '\r')
+    | jq -r '.access_token // empty' | tr -d '\r\n')
   if [ -z "$TOKEN" ]; then
     FAIL=$((FAIL+1)); echo "FAIL  could not sign in the throwaway account (confirmed? right password?)"
   else
@@ -178,6 +205,7 @@ if [ -n "${TEST_EMAIL:-}" ] && [ -n "${TEST_PASSWORD:-}" ]; then
       check "signed in: turn 1" 200
       UENTRY=$(field .entryId)
       [ -n "$UENTRY" ] || die "Signed-in turn 1 returned no entryId (HTTP $STATUS). Stopping."
+      valid_id "$UENTRY" || die "Signed-in turn 1 returned an entryId that is not letters, digits and dashes only. Stopping."
       UMSGS=$(jq -nc --arg a "$(field .response)" '[{role: "user", content: "Journal entry: Signed-in test reflection.\n\nEmotion labels: Tired"}, {role: "assistant", content: $a}]')
       call "$S3" "$TOKEN" "$(follow_body "$UENTRY" 3 "$UMSGS" "Skipping turn 2.")"
       check "signed in: skipping a turn is rejected" 409 turn_out_of_sync

@@ -14,6 +14,9 @@
 #
 # Cost: one Gemini call and one stored reflection, the seed reflection for the throwaway browser.
 # Needs bash, curl and jq; works in Git Bash on Windows. Prints status codes only.
+#
+# DEBUG=1 also prints, for each request: the throwaway browser ID, whether it is valid, the length
+# of the key and body, curl's exit code and the HTTP status. Never the key itself.
 set -uo pipefail
 
 die() { echo "ERROR: $*" >&2; exit 2; }
@@ -31,7 +34,14 @@ need() {
 }
 need curl; need jq
 
-[ -n "${ANON_KEY:-}" ] || die "ANON_KEY is empty. Set it to the publishable (anon) key of the project:
+# clean VALUE: removes \r and \n. A value copied from a Windows file or terminal can end in \r\n,
+# and a \r inside an HTTP header makes curl refuse the request (curl: (43), HTTP 000).
+clean() { printf '%s' "$1" | tr -d '\r\n'; }
+# valid_id VALUE: true only for letters, digits and dashes, so an ID is always safe in a header.
+valid_id() { [[ "$1" =~ ^[A-Za-z0-9-]+$ ]]; }
+ANON_KEY=$(clean "${ANON_KEY:-}")
+
+[ -n "$ANON_KEY" ] || die "ANON_KEY is empty. Set it to the publishable (anon) key of the project:
   ANON_KEY=<key> ./caps-check.sh"
 URL=${SUPABASE_URL:-https://cyfslxhnkfglgpcxoycn.supabase.co}
 FN=${FN:-sakeena-reflect-v2}
@@ -43,25 +53,35 @@ rand_id() {
   command -v uuidgen >/dev/null 2>&1 && id=$(uuidgen 2>/dev/null | tr -dc 'A-Za-z0-9-')
   [ -n "$id" ] || { command -v openssl >/dev/null 2>&1 && id=$(openssl rand -hex 16 2>/dev/null | tr -dc 'A-Za-z0-9'); }
   [ -n "$id" ] || id=$(printf '%s%s%s' "$(date +%s%N 2>/dev/null)" "$RANDOM" "$RANDOM" | tr -dc 'A-Za-z0-9')
-  printf '%s' "$id" | tr 'A-Z' 'a-z'
+  printf '%s' "$id" | tr -d '\r\n' | tr 'A-Z' 'a-z'
 }
 # new_id VAR: puts a fresh random ID in VAR, or stops the run if none could be made.
 new_id() {
   local id
   id=$(rand_id) && [ -n "$id" ] || die "Could not generate a random ID. Stopping before sending anything."
+  valid_id "$id" || die "Generated ID is not letters, digits and dashes only. Stopping before sending anything."
   printf -v "$1" '%s' "$id"
 }
 new_id S; S="test-$S"
+valid_id "$S" || die "Browser ID is not letters, digits and dashes only. Stopping before sending anything."
 TMP_BODY=$(mktemp); trap 'rm -f "$TMP_BODY"' EXIT
-PASS=0; FAIL=0
+PASS=0; FAIL=0; REQ=0
 
 call() { # call <json body>  ->  STATUS, CODE
+  local rc
   [ -n "$S" ] && [ -n "$1" ] || die "Refusing to send a request with an empty browser ID or body."
+  case "$S$ANON_KEY" in *$'\r'*|*$'\n'*) die "Refusing to send a request: a header value contains a line break." ;; esac
+  REQ=$((REQ+1))
   STATUS=$(curl -sS -o "$TMP_BODY" -w "%{http_code}" --max-time 60 "$URL/functions/v1/$FN" \
     -H "apikey: $ANON_KEY" -H "Authorization: Bearer $ANON_KEY" -H "x-session-id: $S" \
     -H "Content-Type: application/json" -d "$1")
+  rc=$?
   # tr -d '\r': some Windows builds of jq end lines with \r\n, which would break every comparison.
   CODE=$(jq -r '.code // empty' "$TMP_BODY" 2>/dev/null | tr -d '\r')
+  if [ "${DEBUG:-}" = 1 ]; then
+    printf 'DEBUG #%s x-session-id=%s (%s chars, valid: %s) key: %s chars, body: %s bytes -> curl exit %s, HTTP %s\n' \
+      "$REQ" "$S" "${#S}" "$(valid_id "$S" && echo yes || echo NO)" "${#ANON_KEY}" "${#1}" "$rc" "$STATUS" >&2
+  fi
 }
 check() { # check <name> <expected status> [expected code]
   if [ "$STATUS" = "$2" ] && { [ -z "${3:-}" ] || [ "$CODE" = "$3" ]; }; then
