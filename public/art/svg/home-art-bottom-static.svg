@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="280" viewBox="0 600 390 280"><style>.wind{stroke-dasharray:46 38}</style>
+<defs>
+<filter id="gouache" filterUnits="userSpaceOnUse" x="-20" y="-20" width="430" height="920" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3" result="e"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="e" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="d"></feDisplacementMap><feTurbulence type="fractalNoise" baseFrequency="0.022" numOctaves="3" seed="11" result="m"></feTurbulence><feColorMatrix in="m" type="matrix" values="0.45 0 0 0 0.72  0.45 0 0 0 0.72  0.45 0 0 0 0.72  0 0 0 0 1" result="mg"></feColorMatrix><feBlend in="d" in2="mg" mode="multiply" result="b"></feBlend><feComposite in="b" in2="d" operator="in"></feComposite></filter>
+<path id="pa2" d="M0,0 C-7,-5 -21,-13 -21,-28 C-21,-40 -9,-47 -2,-40 C-1,-39 0,-38 1,-37 C7,-46 21,-41 21,-28 C21,-14 7,-5 0,0Z"/>
+<path id="pb2" d="M0,0 C-10,-6 -19,-16 -17,-29 C-15,-40 -4,-48 3,-46 C13,-43 20,-31 17,-19 C14,-9 6,-4 0,0Z"/>
+<path id="pc2" d="M0,0 C-8,-7 -23,-15 -20,-31 C-18,-42 -6,-45 0,-39 C5,-45 19,-42 20,-30 C21,-16 8,-6 0,0Z"/>
+<g id="mrd" fill="none" stroke="#FFF7F0" stroke-opacity=".85" stroke-width=".9" stroke-linecap="round"><path d="M0,-4 C1,-14 -1,-24 1,-33"/><circle cx="-6" cy="-18" r="1.6"/><circle cx="6" cy="-24" r="1.4"/><circle cx="-5" cy="-30" r="1.2"/></g>
+<g id="bA">
+<g fill="currentColor"><use href="#pa2" transform="rotate(-56) scale(.95)"></use><use href="#pc2" transform="rotate(54)"></use><use href="#pb2" transform="rotate(2) scale(1.1)"></use><use href="#pa2" transform="rotate(-24) scale(.72)"></use></g>
+<g fill="none" stroke="var(--ol,#5A2236)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="64 5 38 7" transform="translate(1.6 1.4)"><use href="#pa2" transform="rotate(-56) scale(.95)"></use><use href="#pc2" transform="rotate(54)"></use><use href="#pb2" transform="rotate(2) scale(1.1)"></use><use href="#pa2" transform="rotate(-24) scale(.72)"></use></g>
+<use href="#mrd" transform="rotate(2) scale(1.1)"></use><use href="#mrd" transform="rotate(-56) scale(.95)"></use><use href="#mrd" transform="rotate(54)"></use>
+<g fill="#F7EFC8" stroke="var(--ol,#5A2236)" stroke-width=".7"><circle cx="-1.5" cy="-1.5" r="2.6"></circle><circle cx="2.5" cy="-3.5" r="2"></circle><circle cx="0.5" cy="2.5" r="1.8"></circle></g>
+</g>
+<g id="bB">
+<g fill="currentColor"><use href="#pc2" transform="rotate(-64) scale(.9)"></use><use href="#pb2" transform="rotate(-10) scale(1.05)"></use><use href="#pa2" transform="rotate(46)"></use><use href="#pb2" transform="rotate(100) scale(.55)"></use></g>
+<g fill="none" stroke="var(--ol,#5A2236)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="52 6 44 8" transform="translate(-1.5 1.5)"><use href="#pc2" transform="rotate(-64) scale(.9)"></use><use href="#pb2" transform="rotate(-10) scale(1.05)"></use><use href="#pa2" transform="rotate(46)"></use><use href="#pb2" transform="rotate(100) scale(.55)"></use></g>
+<use href="#mrd" transform="rotate(-10) scale(1.05)"></use><use href="#mrd" transform="rotate(46)"></use>
+<g fill="#F7EFC8" stroke="var(--ol,#5A2236)" stroke-width=".7"><circle cx="1.2" cy="-1.8" r="2.5"></circle><circle cx="-2.4" cy="1.4" r="2"></circle></g>
+</g>
+<g id="lf2">
+<path d="M0,0 C9,-11 27,-12 40,-3 C30,9 11,13 0,0Z" fill="#5BBFB8"/>
+<path d="M0,0 C9,-11 27,-12 40,-3 C30,9 11,13 0,0Z" fill="none" stroke="#2F7F7A" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="46 5 30 6" transform="translate(1.4 1.4)"/>
+<path d="M3,0 C14,-2 26,-3 37,-3 M13,-2 L18,-8 M22,-3 L27,-9 M15,-1 L20,5 M25,-2 L30,4" fill="none" stroke="#FFF7F0" stroke-opacity=".8" stroke-width=".9" stroke-linecap="round"/>
+</g>
+</defs>
+<g filter="url(#gouache)">
+<g opacity=".92">
+<path d="M392,96 C374,104 358,120 346,146" fill="none" stroke="#7A5558" stroke-width="2" stroke-linecap="round"/>
+<g class="sway" style="transform-origin:372px 102px;animation-delay:-1.37s"><use href="#lf2" transform="translate(372 102) rotate(150) scale(.7)"></use></g>
+<g class="sway" style="transform-origin:352px 138px;animation-delay:-2.74s"><use href="#lf2" transform="translate(352 138) rotate(70) scale(.7)"></use></g>
+<g class="sway" style="transform-origin:356px 124px;animation-delay:-4.11s"><use href="#bA" transform="translate(356 124) rotate(18) scale(.8)" style="color:#C9306F;--ol:#6B1740"></use></g>
+<g class="sway" style="transform-origin:326px 150px;animation-delay:-5.48s"><use href="#bB" transform="translate(326 150) rotate(-28) scale(.6)" style="color:#F26B4F;--ol:#8A2F1C"></use></g>
+</g>
+<g opacity=".92">
+<g class="sway" style="transform-origin:30px 862px;animation-delay:-1.05s"><use href="#bB" transform="translate(34 842) rotate(-14) scale(1.1)" style="color:#D860A8;--ol:#7C2A66"></use></g>
+<g class="sway" style="transform-origin:58px 868px;animation-delay:-2.42s"><use href="#lf2" transform="translate(66 850) rotate(-160) scale(.9)"></use></g>
+<g class="sway" style="transform-origin:366px 866px;animation-delay:-3.79s"><use href="#bA" transform="translate(352 742) rotate(16) scale(1.1)" style="color:#CC2D4A;--ol:#6E1426"></use></g>
+<g class="sway" style="transform-origin:336px 872px;animation-delay:-5.16s"><use href="#lf2" transform="translate(318 748) rotate(-20) scale(.9)"></use></g>
+<use href="#pa2" fill="currentColor" transform="translate(378 470) rotate(100) scale(.8)" style="color:#D860A8"></use>
+<use href="#pb2" fill="currentColor" transform="translate(8 540) rotate(-80) scale(.7)" style="color:#F26B4F"></use>
+<use href="#pa2" fill="currentColor" transform="translate(130 856) rotate(-40) scale(.5)" style="color:#F26B4F"></use>
+<use href="#pc2" fill="currentColor" transform="translate(254 858) rotate(60) scale(.5)" style="color:#D860A8"></use>
+</g>
+</g>
+
+<path class="wind" d="M262,100 q7.0,-5 14,0 t14,0 t14,0" fill="none" stroke="#81D1D0" stroke-width="1.8" stroke-linecap="round" stroke-opacity=".75" style="animation-delay:-0.0s"/>
+<path class="wind" d="M300,184 q7.0,-5 14,0 t14,0 t14,0 t14,0 t14,0" fill="none" stroke="#E78861" stroke-width="1.8" stroke-linecap="round" stroke-opacity=".75" style="animation-delay:-1.7s"/>
+<path class="wind" d="M6,620 q7.0,-5 14,0 t14,0" fill="none" stroke="#81D1D0" stroke-width="1.8" stroke-linecap="round" stroke-opacity=".75" style="animation-delay:-3.4s"/>
+<path class="wind" d="M330,640 q7.0,-5 14,0 t14,0 t14,0 t14,0" fill="none" stroke="#E78861" stroke-width="1.8" stroke-linecap="round" stroke-opacity=".75" style="animation-delay:-5.1s"/>
+</svg>

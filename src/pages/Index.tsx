@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { isOnboardingDone, type JournalEntry } from "@/lib/storage";
-import Onboarding from "@/components/Onboarding";
+import { isWelcomeSeen, markWelcomeSeen, type JournalEntry } from "@/lib/storage";
+import Welcome from "@/components/Welcome";
+import ScreenFrame from "@/components/layout/ScreenFrame";
+import ArtImage from "@/components/art/ArtImage";
 import HomeScreen from "@/components/HomeScreen";
 import ResponseScreen from "@/components/ResponseScreen";
 import JournalScreen from "@/components/JournalScreen";
@@ -16,10 +18,15 @@ type Screen = "home" | "response" | "journal" | "signup" | "signin" | "confirm-e
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [screen, setScreen] = useState<Screen>("home");
   const [lastEntry, setLastEntry] = useState<JournalEntry | null>(null);
   const [signUpEmail, setSignUpEmail] = useState("");
+
+  // Each screen opens at its top, not at the scroll position the previous screen was left at.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [screen]);
 
   useEffect(() => {
     let resolved = false;
@@ -34,10 +41,12 @@ const Index = () => {
 
       setUser(currentUser);
       if (currentUser) {
-        setShowOnboarding(false);
         setScreen("home");
-      } else {
-        setShowOnboarding(!isOnboardingDone());
+      }
+      // Show the v3 Welcome automatically once per browser, including to existing users.
+      if (!isWelcomeSeen()) {
+        markWelcomeSeen();
+        setWelcomeOpen(true);
       }
       setAuthLoading(false);
     };
@@ -65,7 +74,6 @@ const Index = () => {
         setTimeout(() => {
           void migrateAnonymousData(currentUser.id).finally(() => {
             setUser(currentUser);
-            setShowOnboarding(false);
             setScreen("home");
             setAuthLoading(false);
           });
@@ -120,90 +128,83 @@ const Index = () => {
     setAuthLoading(true);
   };
 
+  // Reopening the Welcome never resets the flag, entries, session or Home draft.
+  const openWelcome = () => setWelcomeOpen(true);
+  const closeWelcome = () => {
+    markWelcomeSeen();
+    setWelcomeOpen(false);
+  };
+
+  // Active item: maroon with a coral underline (decorative, not the only cue: aria-current is set too).
+  const navLinkClass = (active: boolean) =>
+    `font-body border-b-2 pb-[3px] leading-normal transition-colors hover:text-maroon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon ${active ? "border-coral text-maroon" : "border-transparent text-clay-deep"}`;
+
+  // The Response screen continues the Home flow, so Home stays the current nav item (as in the mockups).
+  const onHome = screen === "home" || screen === "response";
+  // The account screens sit under the header with Sign in as the current nav item.
+  const onAuth = screen === "signin" || screen === "signup" || screen === "confirm-email" || screen === "reset-password";
+
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#1A0F0A' }}>
-        <h1 className="font-display" style={{ fontSize: '36px', fontStyle: 'italic', fontWeight: 300, color: 'rgba(255, 248, 242, 0.9)' }}>
+      <ScreenFrame contentClassName="items-center justify-center">
+        <h1 className="font-display text-[36px] font-semibold text-maroon">
           Sajaa
         </h1>
-      </div>
+      </ScreenFrame>
     );
-  }
-
-  if (showOnboarding) {
-    return <Onboarding onComplete={() => setShowOnboarding(false)} />;
-  }
-
-  if (screen === "signup") {
-    return <SignUpPrompt onSignUpSuccess={handleSignUpSuccess} onSignIn={() => setScreen("signin")} />;
-  }
-  if (screen === "signin") {
-    return (
-      <SignInScreen
-        onSignInSuccess={handleSignInSuccess}
-        onSignUp={() => setScreen("signup")}
-        onForgotPassword={() => setScreen("reset-password")}
-      />
-    );
-  }
-  if (screen === "confirm-email") {
-    return <EmailConfirmationScreen email={signUpEmail} onBackToSignUp={() => setScreen("signup")} />;
-  }
-  if (screen === "reset-password") {
-    return <PasswordResetScreen onBackToSignIn={() => setScreen("signin")} />;
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#FDF6F0' }}>
-      <header className="sticky top-0 z-10 backdrop-blur-sm" style={{ background: '#FDF6F0', borderBottom: '1px solid #F0E0D4' }}>
-        <div className="max-w-[420px] mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="font-display leading-none" style={{ fontSize: '23px', fontStyle: 'italic', color: '#2C1810' }}>Sajaa</h1>
-              <p className="mt-0.5 font-body" style={{ fontSize: '10.5px', color: 'rgba(44, 24, 16, 0.45)' }}>A quiet space for your thoughts.</p>
-            </div>
-            <nav className="flex gap-4 text-xs font-medium items-center">
+    <>
+    {/* While the Welcome is open the page behind it is inert: not focusable or clickable, but still mounted. */}
+    <div {...(welcomeOpen ? { inert: "", "aria-hidden": true } : {})}>
+    {/* Every screen here uses the animated Home artwork and starts right under the header. */}
+    <ScreenFrame art="home">
+      <header className="sticky top-0 z-10 bg-cream/95 backdrop-blur-sm">
+        <div className="flex h-[72px] items-center justify-between px-5">
+          <h1 className="font-display text-[21px] font-semibold leading-none text-maroon">
+            <button
+              type="button"
+              onClick={openWelcome}
+              aria-haspopup="dialog"
+              className="flex items-center gap-[10px] rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+            >
+              {/* 22x28 slot as in the mockup; the logo file has transparent padding, so it is drawn larger and offset to put its ink in the slot. */}
+              <span className="relative h-[28px] w-[22px] shrink-0">
+                <ArtImage name="logo-mark" width={34} height={45} className="absolute -left-[6px] -top-[8px] h-[45px] w-[34px] max-w-none" />
+              </span>
+              Sajaa
+            </button>
+          </h1>
+          <nav className="flex items-center gap-[18px] text-[15px] font-medium">
+            <button type="button" onClick={() => setScreen("home")} aria-current={onHome ? "page" : undefined} className={navLinkClass(onHome)}>
+              Home
+            </button>
+            <button type="button" onClick={() => setScreen("journal")} aria-current={screen === "journal" ? "page" : undefined} className={navLinkClass(screen === "journal")}>
+              Journal
+            </button>
+            {user ? (
               <button
-                onClick={() => setScreen("home")}
-                className="transition-colors font-body"
-                style={{ color: screen === "home" ? '#2C1810' : 'rgba(44, 24, 16, 0.45)' }}
+                type="button"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setUser(null);
+                  setScreen("home");
+                }}
+                className={navLinkClass(false)}
               >
-                Home
+                Sign out
               </button>
-              <button
-                onClick={() => setScreen("journal")}
-                className="transition-colors font-body"
-                style={{ color: screen === "journal" ? '#2C1810' : 'rgba(44, 24, 16, 0.45)' }}
-              >
-                Journal
+            ) : (
+              <button type="button" onClick={() => setScreen("signin")} aria-current={onAuth ? "page" : undefined} className={navLinkClass(onAuth)}>
+                Sign in
               </button>
-              {user ? (
-                <button
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    setUser(null);
-                    setScreen("home");
-                  }}
-                  className="transition-colors font-body"
-                  style={{ color: 'rgba(44, 24, 16, 0.45)', fontSize: '11px' }}
-                >
-                  Sign out
-                </button>
-              ) : (
-                <button
-                  onClick={() => setScreen("signin")}
-                  className="transition-colors font-body"
-                  style={{ color: 'rgba(44, 24, 16, 0.45)', fontSize: '11px' }}
-                >
-                  Sign in
-                </button>
-              )}
-            </nav>
-          </div>
+            )}
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-[420px] mx-auto px-6 pt-9 pb-7">
+      <main className="flex-1 px-5 pb-7">
         {screen === "home" && <HomeScreen onResponse={handleResponse} />}
         {screen === "response" && lastEntry && (
           <ResponseScreen
@@ -211,12 +212,39 @@ const Index = () => {
             isAuthenticated={Boolean(user)}
             onSaveReflection={() => setScreen("signup")}
             onViewJournal={() => setScreen("journal")}
+            onGoHome={() => setScreen("home")}
             onEntryUpdate={handleEntryUpdate}
           />
         )}
-        {screen === "journal" && <JournalScreen onNavigateHome={() => setScreen("home")} />}
+        {screen === "journal" && (
+          <JournalScreen onNavigateHome={() => setScreen("home")} isAuthenticated={Boolean(user)} onSignIn={() => setScreen("signin")} />
+        )}
+        {screen === "signin" && (
+          <SignInScreen
+            onSignInSuccess={handleSignInSuccess}
+            onSignUp={() => setScreen("signup")}
+            onForgotPassword={() => setScreen("reset-password")}
+          />
+        )}
+        {screen === "signup" && <SignUpPrompt onSignUpSuccess={handleSignUpSuccess} onSignIn={() => setScreen("signin")} />}
+        {screen === "confirm-email" && <EmailConfirmationScreen email={signUpEmail} onBackToSignUp={() => setScreen("signup")} />}
+        {screen === "reset-password" && <PasswordResetScreen onBackToSignIn={() => setScreen("signin")} />}
       </main>
+
+      <footer className="px-5 pb-4 text-center">
+        <button
+          type="button"
+          onClick={openWelcome}
+          aria-haspopup="dialog"
+          className="rounded-sm text-xs text-clay underline-offset-4 hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon"
+        >
+          About Sajaa
+        </button>
+      </footer>
+    </ScreenFrame>
     </div>
+    {welcomeOpen && <Welcome onBegin={closeWelcome} />}
+    </>
   );
 };
 

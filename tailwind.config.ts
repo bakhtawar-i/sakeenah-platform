@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Cormorant Garamond", "serif"],
-        body: ["Lora", "serif"],
+        display: ["Readex Pro", "system-ui", "sans-serif"],
+        body: ["Readex Pro", "system-ui", "sans-serif"],
+        arabic: ["Aref Ruqaa", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -52,16 +53,25 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        rose: {
-          DEFAULT: "hsl(var(--rose))",
-          deep: "hsl(var(--rose-deep))",
-          pale: "hsl(var(--rose-pale))",
+        ink: "hsl(var(--ink))",
+        cream: "hsl(var(--cream))",
+        maroon: "hsl(var(--maroon))",
+        clay: {
+          DEFAULT: "hsl(var(--clay))",
+          deep: "hsl(var(--clay-deep))",
         },
-        terracotta: {
-          DEFAULT: "hsl(var(--terracotta))",
-          deep: "hsl(var(--terracotta-deep))",
+        turquoise: "hsl(var(--turquoise))",
+        mint: "hsl(var(--mint))",
+        coral: "hsl(var(--coral))",
+        blush: "hsl(var(--blush))",
+        bloom: {
+          magenta: "hsl(var(--bloom-magenta))",
+          pink: "hsl(var(--bloom-pink))",
+          red: "hsl(var(--bloom-red))",
+          orange: "hsl(var(--bloom-orange))",
         },
-        gold: "hsl(var(--gold))",
+        hairline: "hsl(var(--hairline))",
+        danger: "hsl(var(--danger))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

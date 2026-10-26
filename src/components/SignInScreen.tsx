@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { signIn } from "@/lib/auth";
+import { AUTH_HEADING, AUTH_SUBLINE, AuthField, ResendConfirmation, TextLink } from "@/components/auth/AuthParts";
+import { PRIMARY, SECONDARY } from "@/components/reflection/styles";
 
 interface Props {
   onSignInSuccess: () => void;
@@ -7,11 +9,16 @@ interface Props {
   onForgotPassword: () => void;
 }
 
+// Supabase answers a wrong email or a wrong password with the same error; say so without naming either.
+const INVALID_CREDENTIALS = "That email and password don't match. Please try again.";
+
 export default function SignInScreen({ onSignInSuccess, onSignUp, onForgotPassword }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  // Set when the account exists but its email isn't confirmed yet: offer the link again instead of an error.
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
 
   const validate = () => {
     const e: typeof errors = {};
@@ -25,10 +32,16 @@ export default function SignInScreen({ onSignInSuccess, onSignUp, onForgotPasswo
     if (!validate() || loading) return;
     setLoading(true);
     setErrors({});
+    setUnconfirmedEmail(null);
 
     const { error } = await signIn(email.trim(), password);
+    if (error && (error.code === "email_not_confirmed" || error.message === "Email not confirmed")) {
+      setUnconfirmedEmail(email.trim());
+      setLoading(false);
+      return;
+    }
     if (error) {
-      setErrors({ general: error.message });
+      setErrors({ general: error.message === "Invalid login credentials" ? INVALID_CREDENTIALS : error.message });
       setLoading(false);
       return;
     }
@@ -38,114 +51,58 @@ export default function SignInScreen({ onSignInSuccess, onSignUp, onForgotPasswo
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-8"
-      style={{ background: '#1A0F0A' }}
+    <form
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        void handleSubmit();
+      }}
+      className="animate-fade-in pt-6"
     >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% 20%, rgba(193,124,116,0.10) 0%, transparent 70%)' }}
+      <h2 className={AUTH_HEADING}>Welcome back.</h2>
+      <p className={AUTH_SUBLINE}>Sign in to your Sajaa account.</p>
+
+      <AuthField
+        className="mt-[30px]"
+        label="Email"
+        type="email"
+        autoComplete="email"
+        inputMode="email"
+        placeholder="you@example.com"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        error={errors.email}
+      />
+      <AuthField
+        className="mt-[22px]"
+        label="Password"
+        type="password"
+        autoComplete="current-password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        error={errors.password ?? errors.general}
       />
 
-      <div className="max-w-sm w-full relative z-10 animate-fade-in">
-        <h2
-          className="font-display text-center"
-          style={{ fontSize: '28px', fontWeight: 300, fontStyle: 'italic', color: 'rgba(255, 248, 242, 0.9)', marginBottom: '32px' }}
-        >
-          Welcome back
-        </h2>
-
-        {errors.general && (
-          <p className="font-body text-center" style={{ fontSize: '12px', color: '#C17C74', marginBottom: '16px' }}>
-            {errors.general}
+      {unconfirmedEmail && (
+        <div className="mt-[22px] rounded-[16px] border border-hairline bg-white px-4 py-[14px]">
+          <p role="alert" className="text-[15px] leading-[1.5] text-clay-deep">
+            Please confirm your email first. We can send the link again.
           </p>
-        )}
-
-        <div style={{ marginBottom: '16px' }}>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
-            className="w-full font-body"
-            style={{
-              background: '#FFFFFF',
-              border: `0.5px solid ${errors.email ? '#C17C74' : '#E8D5C8'}`,
-              borderRadius: '12px',
-              padding: '14px 16px',
-              fontSize: '14px',
-              color: '#2C1810',
-              outline: 'none',
-            }}
-            onFocus={(e) => (e.target.style.borderColor = '#C17C74')}
-            onBlur={(e) => { if (!errors.email) e.target.style.borderColor = '#E8D5C8'; }}
-          />
-          {errors.email && (
-            <p className="font-body" style={{ fontSize: '12px', color: '#A85E56', marginTop: '6px' }}>{errors.email}</p>
-          )}
+          <ResendConfirmation email={unconfirmedEmail} className="mt-3" />
         </div>
+      )}
 
-        <div style={{ marginBottom: '8px' }}>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full font-body"
-            style={{
-              background: '#FFFFFF',
-              border: `0.5px solid ${errors.password ? '#C17C74' : '#E8D5C8'}`,
-              borderRadius: '12px',
-              padding: '14px 16px',
-              fontSize: '14px',
-              color: '#2C1810',
-              outline: 'none',
-            }}
-            onFocus={(e) => (e.target.style.borderColor = '#C17C74')}
-            onBlur={(e) => { if (!errors.password) e.target.style.borderColor = '#E8D5C8'; }}
-          />
-          {errors.password && (
-            <p className="font-body" style={{ fontSize: '12px', color: '#A85E56', marginTop: '6px' }}>{errors.password}</p>
-          )}
-        </div>
+      <button type="submit" disabled={loading} className={`mt-[26px] ${PRIMARY}`}>
+        {loading ? "Signing in..." : "Sign in"}
+      </button>
+      <TextLink onClick={onForgotPassword} className="mt-[18px]">
+        Forgot your password?
+      </TextLink>
 
-        <p className="text-right" style={{ marginBottom: '24px' }}>
-          <button
-            onClick={onForgotPassword}
-            className="font-body"
-            style={{ fontSize: '12px', color: 'rgba(255, 248, 242, 0.35)', background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            Forgot password?
-          </button>
-        </p>
-
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full font-body font-medium"
-          style={{
-            background: loading ? 'rgba(253, 246, 240, 0.5)' : '#FDF6F0',
-            color: '#2C1810',
-            borderRadius: '100px',
-            padding: '14px',
-            fontSize: '14px',
-            border: 'none',
-            cursor: loading ? 'default' : 'pointer',
-          }}
-        >
-          {loading ? "Signing in..." : "Sign in"}
-        </button>
-
-        <p className="text-center" style={{ marginTop: '20px' }}>
-          <button
-            onClick={onSignUp}
-            className="font-body"
-            style={{ fontSize: '13px', color: 'rgba(255, 248, 242, 0.40)', background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            Don't have an account? <span style={{ color: 'rgba(255, 248, 242, 0.65)' }}>Sign up</span>
-          </button>
-        </p>
-      </div>
-    </div>
+      <hr className="mt-[34px] border-0 border-t border-hairline" />
+      <button type="button" onClick={onSignUp} className={`mt-[26px] ${SECONDARY}`}>
+        Create an account
+      </button>
+    </form>
   );
 }

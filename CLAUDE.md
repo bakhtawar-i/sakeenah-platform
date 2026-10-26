@@ -15,7 +15,7 @@ Sajaa is a responsive web app deployed on Vercel. It is not currently a native m
 - Backend: Supabase Auth, Postgres, RLS, RPCs, and Edge Functions
 - AI provider: Gemini through Supabase Edge Functions
 - Deployment: GitHub branches, Vercel Preview deployments, and Vercel production from `main`
-- Fonts: Cormorant Garamond for display text and Lora for body text
+- Fonts: Readex Pro for all Latin text; Aref Ruqaa for the Arabic wordmark only
 
 Do not migrate AI providers unless explicitly requested. Anthropic migration is deferred until retention or paid usage justifies it.
 
@@ -27,7 +27,7 @@ Do not migrate AI providers unless explicitly requested. Anthropic migration is 
 - `src/components/HomeScreen.tsx`: daily reflection input and emotion selection
 - `src/components/ResponseScreen.tsx`: AI response and follow-up conversation
 - `src/components/JournalScreen.tsx`: journal history read through an RPC
-- `src/components/Onboarding.tsx`: single-screen onboarding trust and privacy introduction
+- `src/components/Welcome.tsx`: v3 Welcome screen (wordmark, tagline, privacy footer); shown once per browser via `sajaa_onboarding_v3` and reopened from the header wordmark or the "About Sajaa" footer link
 - `src/lib/session.ts`: anonymous browser session ID stored as `sakeenah_session_id`
 - `src/integrations/supabase/client.ts`: Supabase browser client
 - `src/integrations/supabase/types.ts`: generated Supabase types
@@ -103,28 +103,19 @@ Recommended privacy wording:
 
 ## Design System
 
-### Colors
+`DESIGN.md` is the source of truth for the v3 visual design: palette, type, interface rules, artwork, motion and screen content. Read it before any UI change.
 
-```text
-Background:     #FDF6F0
-Surface:        #FFFAF7
-Primary text:   #2C1810
-Muted text:     rgba(44, 24, 16, 0.45)
-Border:         #E8D5C8
-Rose accent:    #C17C74
-Rose deep:      #A85E56
-Highlight bg:   #FAF3EE
-```
+Implementation notes:
 
-### Typography And Layout
-
-- Display font: Cormorant Garamond, usually italic and weight 300 or 400
-- Body font: Lora, weight 400 or 500
-- Maximum content width: `420px`
-- Mobile-first responsive web layout
-- Cards and inputs: `12px` border radius
-- Primary buttons and emotion chips: pill shape
-- Borders: subtle `0.5px` or `1px`
+- Palette tokens live in `src/index.css` (`--ink`, `--cream`, `--maroon`, `--clay`, `--clay-deep`, `--turquoise`, `--mint`, `--coral`, `--blush`, `--bloom-*`, `--hairline`) and map to Tailwind colors of the same names in `tailwind.config.ts`. shadcn semantic tokens (`--primary`, `--background`, ...) point at them.
+- Prefer token classes (`bg-maroon`, `text-clay`, `font-arabic`) over hardcoded hex in new or restyled code.
+- Fonts are self-hosted in `public/fonts` and declared with `@font-face` in `src/index.css`; never load fonts from Google or another third-party CDN. `font-display` and `font-body` are both Readex Pro; `font-arabic` is Aref Ruqaa, subset to the سجى wordmark (U+062C, U+0633, U+0649).
+- Never put white text on coral.
+- Every screen renders inside the app column (`src/components/layout/column.ts`, used by `ScreenFrame.tsx` and `Welcome.tsx`): centred, max `430px` wide, at least `100dvh` tall. On phones it is the whole cream screen; wider than 430px it is a card (24px radius, 1px `#DECFCA` border, soft shadow) on a blush page. Artwork is positioned relative to the column and clipped at its edges, with reserved space so it never sits under text, inputs or pills. Home uses `home-art-top`/`home-art-bottom`; other screens use the two corner pieces; Welcome uses its own 390x844 art layer.
+- Primary buttons and feeling pills: pill shape.
+- Decorative artwork stays at screen edges, never behind text, inputs or pills, and all motion is disabled under `prefers-reduced-motion`.
+- Artwork lives in `public/art/` (`webp/` preferred, `svg/` fallback, `brand/` for icons and the wordmark). Render it with `src/components/art/ArtImage.tsx`, which is decorative (`aria-hidden`, no pointer events).
+- Motion: `welcome-art-layer`, `home-art-top` and `home-art-bottom` render through `src/components/art/MotionArt.tsx`. Their flowers and leaves are pre-rendered WebP sprites in `public/art/motion/` rotated with CSS transforms, and the wind lines are masked dash strips moving with transforms, so the compositor runs it without repainting. Never animate the filtered SVG directly: it repaints every frame and drops to about 25fps on a throttled phone. Regenerate sprites with `scripts/render-art-sprites.cjs` only if the drawing changes; the still drawings are `svg/<name>-static.svg`. The sway amplitude is `--sway-angle` in `src/index.css`. With reduced motion, MotionArt shows the static artwork. Nothing else animates.
 
 Do not modify files under `src/components/ui/` unless explicitly requested.
 

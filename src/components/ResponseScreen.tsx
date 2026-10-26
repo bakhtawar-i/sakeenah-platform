@@ -1,57 +1,113 @@
-import { useState } from "react";
+import { useId, useState } from "react";
+import { CARD, PRIMARY, REPLY_CARD, SECONDARY } from "@/components/reflection/styles";
+import { EmotionPills, Paragraphs, SectionLabel, TurnRow, type Turn } from "@/components/reflection/ReflectionParts";
 import { supabase } from "@/integrations/supabase/client";
 import { type JournalEntry, type ConversationMessage } from "@/lib/storage";
-import ReactMarkdown from "react-markdown";
 
 interface Props {
   entry: JournalEntry;
   isAuthenticated: boolean;
   onSaveReflection: () => void;
   onViewJournal: () => void;
+  onGoHome: () => void;
   onEntryUpdate: (entry: JournalEntry) => void;
 }
 
-function splitResponseAndQuestion(response: string): { mainResponse: string; question: string | null } {
-  const sentences = response.split(/(?<=[.!?])\s+/);
+const MAX_TURNS = 4;
+const MAX_REPLY_CHARS = 1000;
 
-  let questionIndex = -1;
-  for (let i = sentences.length - 1; i >= 0; i--) {
-    if (sentences[i].trim().endsWith('?')) {
-      questionIndex = i;
+// The model does not return a title, so the heading is a short fixed line.
+const HEADING = "Something to hold on to.";
+const FINAL_HEADING = "That is enough for today.";
+
+/** Splits off the last question so it can sit above the reply box. Cuts the original text, so paragraph breaks survive. */
+function splitResponseAndQuestion(response: string): { mainResponse: string; question: string | null } {
+  // Start offset of each sentence: the text start, then after every sentence-ending punctuation + whitespace.
+  const starts = [0, ...[...response.matchAll(/(?<=[.!?])\s+/g)].map((m) => m.index + m[0].length)];
+
+  let questionStart = -1;
+  for (let i = starts.length - 1; i >= 0; i--) {
+    const end = i + 1 < starts.length ? starts[i + 1] : response.length;
+    if (response.slice(starts[i], end).trim().endsWith("?")) {
+      questionStart = starts[i];
       break;
     }
   }
 
-  if (questionIndex === -1) {
+  if (questionStart === -1) {
     return { mainResponse: response, question: null };
   }
 
-  const mainResponse = sentences.slice(0, questionIndex).join(' ').trim();
-  const question = sentences.slice(questionIndex).join(' ').trim();
-
-  return { mainResponse, question };
+  return { mainResponse: response.slice(0, questionStart).trim(), question: response.slice(questionStart).trim() };
 }
 
-export default function ResponseScreen({ entry, isAuthenticated, onSaveReflection, onViewJournal, onEntryUpdate }: Props) {
+/**
+ * One turn per user/assistant pair. Turn 1 shows the reflection as the person typed it: its stored
+ * message is the model-facing version (with the emotion labels), so it comes from entry.thought.
+ */
+function toTurns(entry: JournalEntry): Turn[] {
+  const turns: Turn[] = [{ number: 1, wrote: entry.thought, reply: entry.messages[1]?.content ?? entry.response }];
+  for (let i = 2; i + 1 < entry.messages.length; i += 2) {
+    turns.push({ number: turns.length + 1, wrote: entry.messages[i].content, reply: entry.messages[i + 1].content });
+  }
+  return turns;
+}
+
+/** A small wind line whose dashes drift: the same masked, transform-only strip as the artwork (.art-wind). */
+function ThinkingSquiggle({ color, delay }: { color: string; delay: number }) {
+  // Mask: the mockup's path at 64x18 (viewBox -2 -9 68 18, scaled to fit). Its dash period of 84
+  // along the curve is 77.27 units along x; at this scale, 64/68 px per unit.
+  const scale = 64 / 68;
+  const period = 77.27 * scale;
+  const start = 2 * scale;
+  const mask = `url("data:image/svg+xml,${encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="18" viewBox="-2 -9 68 18"><path d="M0,0 q8,-6 16,0 t16,0 t16,0 t16,0" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>',
+  )}") 0 0 / 100% 100% no-repeat`;
+  return (
+    <div aria-hidden="true" className="relative h-[18px] w-16 overflow-hidden" style={{ mask, WebkitMask: mask }}>
+      <div
+        className="art-wind absolute inset-y-0"
+        style={{ left: start - 3 * period, width: 6 * period, color, opacity: 1, animationDelay: `${delay}s` }}
+      />
+    </div>
+  );
+}
+
+export default function ResponseScreen({ entry, isAuthenticated, onSaveReflection, onViewJournal, onGoHome, onEntryUpdate }: Props) {
   const [replyText, setReplyText] = useState("");
+  // The reply being sent; set while waiting and kept if the call fails.
+  const [pendingText, setPendingText] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [failed, setFailed] = useState(false);
   const [safetyResponse, setSafetyResponse] = useState("");
+  const [openTurn, setOpenTurn] = useState<number | null>(null);
+  const replyLabelId = useId();
+  const counterId = useId();
 
-  const { mainResponse, question } = splitResponseAndQuestion(entry.response);
-
-  const followUpMessages = entry.messages?.slice(2) || [];
-
-  const exchangesRemaining = 4 - entry.turnCount;
+  const turns = toTurns(entry);
+  const current = turns[turns.length - 1];
+  const finished = entry.status === "completed";
+  const { mainResponse, question } = splitResponseAndQuestion(current.reply);
+  // While waiting (or after a failure) the reply being sent is the next turn, so every turn so far collapses.
+  const pending = loading || failed;
+  const earlier = pending ? turns : turns.slice(0, -1);
+  const shownTurn = pending ? current.number + 1 : current.number;
+  const counter = shownTurn >= 2 ? `${shownTurn} of ${MAX_TURNS}` : undefined;
+  const remaining = MAX_REPLY_CHARS - replyText.length;
+  const canSend = replyText.trim().length > 0 && !loading;
 
   const sendReply = async () => {
-    if (!replyText.trim() || loading || entry.status === "completed") return;
+    const text = replyText.trim();
+    if (!text || loading || finished) return;
     setLoading(true);
-    setError("");
+    setFailed(false);
+    setPendingText(text);
     setSafetyResponse("");
+    setOpenTurn(null);
+    window.scrollTo({ top: 0 });
 
     try {
-      const newUserMessage: ConversationMessage = { role: "user", content: replyText.trim() };
+      const newUserMessage: ConversationMessage = { role: "user", content: text };
       const updatedMessages = [...entry.messages, newUserMessage];
       const currentTurn = entry.turnCount || 0;
       const nextTurn = currentTurn + 1;
@@ -71,7 +127,7 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
 
       const aiResponse: ConversationMessage = { role: "assistant", content: responseText };
       const finalMessages = [...updatedMessages, aiResponse];
-      const newStatus = nextTurn >= 4 ? "completed" : "active";
+      const newStatus = nextTurn >= MAX_TURNS ? "completed" : "active";
 
       const updatedEntry: JournalEntry = {
         ...entry,
@@ -82,366 +138,142 @@ export default function ResponseScreen({ entry, isAuthenticated, onSaveReflectio
 
       onEntryUpdate(updatedEntry);
       setReplyText("");
+      window.scrollTo({ top: 0 });
     } catch {
-      setError("Something went wrong. Please try again.");
+      setFailed(true);
     } finally {
       setLoading(false);
+      setPendingText(null);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendReply();
-    }
-  };
+  // Every exchange is already stored by the server, so these buttons only leave the conversation:
+  // to the Journal when signed in, or to create an account (which claims the entry) when not.
+  const finish = isAuthenticated ? onViewJournal : onSaveReflection;
 
   return (
-    <div className="animate-fade-in" style={{ padding: '24px 20px 0 20px' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="animate-fade-in pt-6">
+      {/* Narrow enough to stay left of the top-right artwork, as on Home. */}
+      <h2 className="font-display max-w-[min(230px,calc(100%-117px))] text-[30px] font-semibold leading-[1.2] text-maroon">
+        {finished ? FINAL_HEADING : HEADING}
+      </h2>
 
-        {/* 1. USER JOURNAL ENTRY - Right-aligned chat bubble */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-          <div
-            style={{
-              maxWidth: '80%',
-              background: '#A85E56',
-              borderRadius: '18px 18px 4px 18px',
-              padding: '14px 18px',
-            }}
-          >
-            {entry.emotions.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'flex-end', marginBottom: '10px' }}>
-                {entry.emotions.map((e) => (
-                  <span
-                    key={e}
-                    className="font-body"
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.22)',
-                      color: 'white',
-                      fontSize: '11px',
-                      padding: '3px 10px',
-                      borderRadius: '100px',
-                    }}
-                  >
-                    {e}
-                  </span>
-                ))}
-              </div>
-            )}
-            <p
-              className="font-body"
-              style={{
-                fontSize: '13.5px',
-                color: '#FFFFFF',
-                lineHeight: '1.7',
-                margin: 0,
-                textAlign: 'right',
-              }}
-            >
-              {entry.thought}
-            </p>
-          </div>
+      {earlier.length > 0 && (
+        <div className="mt-[26px] flex flex-col gap-3">
+          {earlier.map((turn) => (
+            <TurnRow
+              key={turn.number}
+              turn={turn}
+              emotions={entry.emotions}
+              expanded={openTurn === turn.number}
+              onToggle={() => setOpenTurn(openTurn === turn.number ? null : turn.number)}
+            />
+          ))}
         </div>
+      )}
 
-        {/* 2. INITIAL AI RESPONSE - Full width card */}
+      {/* What the person wrote this turn (on failure it stays in the box below instead). */}
+      {!failed && (
+        <>
+          <SectionLabel className="mt-[26px]">YOU WROTE</SectionLabel>
+          <div className={`mt-2 ${CARD}`}>
+            <p className="whitespace-pre-line text-[15px] leading-[1.5] text-clay-deep">{loading ? pendingText : current.wrote}</p>
+            {!loading && current.number === 1 && <EmotionPills emotions={entry.emotions} />}
+          </div>
+        </>
+      )}
+
+      <SectionLabel className={failed ? "mt-[26px]" : "mt-7"} counter={counter}>
+        A REFLECTION FOR YOU
+      </SectionLabel>
+      {loading ? (
+        <>
+          <div role="status" className="mt-2 flex flex-col items-center gap-[10px] rounded-[20px] border border-hairline bg-white px-5 py-7 text-[15.5px] leading-[normal] text-clay-deep">
+            <ThinkingSquiggle color="#81D1D0" delay={0} />
+            <ThinkingSquiggle color="#E78861" delay={-2} />
+            <p className="mt-[6px]">Taking a moment to reflect on this…</p>
+          </div>
+          {/* The reply is only stored once the response arrives, so leaving now would lose it. */}
+          <p className="mt-[14px] text-center text-[13px] leading-[normal] text-clay">Please keep this page open while this finishes.</p>
+        </>
+      ) : failed ? (
+        <div role="alert" className={`mt-2 ${REPLY_CARD} text-center`}>
+          <p>That didn't go through. Please try again.</p>
+          <button type="button" onClick={sendReply} disabled={!canSend} className={`mt-5 ${PRIMARY}`}>
+            Try again
+          </button>
+        </div>
+      ) : (
+        <div className={`mt-2 ${REPLY_CARD}`}>
+          <Paragraphs text={finished ? current.reply : mainResponse || current.reply} />
+        </div>
+      )}
+
+      {finished && (
+        <>
+          <p className="mt-[18px] rounded-[16px] bg-mint px-4 py-[14px] text-[15px] leading-[1.5] text-ink">
+            This was today's reflection. Rest well, and come back whenever you need to set something down.
+          </p>
+          {!isAuthenticated && (
+            <p className="mt-6 text-center text-[13px] leading-[1.5] text-clay">Create an account to keep this reflection.</p>
+          )}
+          <button type="button" onClick={finish} className={`${isAuthenticated ? "mt-6" : "mt-3"} ${PRIMARY}`}>
+            Done for today
+          </button>
+          <button type="button" onClick={onGoHome} className={`mt-3 ${SECONDARY}`}>
+            Back to Home
+          </button>
+        </>
+      )}
+
+      {!finished && !loading && (
+        <>
+          {question ? (
+            <p id={replyLabelId} className="mt-8 text-[17px] font-semibold leading-[1.35] text-maroon">
+              {question}
+            </p>
+          ) : (
+            <div className="mt-8" />
+          )}
+          <textarea
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value.slice(0, MAX_REPLY_CHARS))}
+            {...(question ? { "aria-labelledby": replyLabelId } : { "aria-label": "Your follow-up" })}
+            aria-describedby={counterId}
+            placeholder="Write a few words…"
+            className={`font-body block h-[120px] w-full resize-none rounded-[20px] border-[1.5px] border-turquoise bg-white px-[18px] py-4 text-[17px] leading-[1.45] text-ink transition-[border-color,box-shadow] duration-200 placeholder:text-[#85666A] focus:border-maroon focus:outline-none focus:ring-[3px] focus:ring-maroon/15 ${question ? "mt-3" : ""}`}
+          />
+          <p id={counterId} className={`mt-2 text-right text-[13px] leading-[normal] ${remaining < 30 ? "text-maroon" : "text-clay"}`}>
+            {remaining} {remaining === 1 ? "character" : "characters"} remaining
+          </p>
+          {!failed && (
+            <button type="button" onClick={sendReply} disabled={!canSend} className={`mt-[22px] ${PRIMARY}`}>
+              Continue
+            </button>
+          )}
+          <button type="button" onClick={finish} className={`${failed ? "mt-[22px]" : "mt-3"} ${SECONDARY}`}>
+            Finish
+          </button>
+        </>
+      )}
+
+      {safetyResponse && (
         <div
+          className="font-body mt-7"
           style={{
-            background: '#FFFFFF',
-            border: '0.5px solid #E8D5C8',
+            background: '#FFFAF7',
+            border: '1px solid #E8D5C8',
+            borderLeft: '3px solid #A85E56',
             borderRadius: '12px',
-            padding: '16px 18px',
+            color: '#2C1810',
+            fontSize: '13px',
+            lineHeight: '1.75',
+            padding: '16px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
-            <div
-              style={{
-                width: '5px',
-                height: '5px',
-                borderRadius: '50%',
-                background: '#C17C74',
-              }}
-            />
-            <span
-              className="font-body"
-              style={{
-                fontSize: '10px',
-                color: 'rgba(44, 24, 16, 0.45)',
-              }}
-            >
-              A reflection for you
-            </span>
-          </div>
-
-          <div
-            style={{
-              borderLeft: '1.5px solid #E2CFC5',
-              paddingLeft: '14px',
-            }}
-          >
-            <div
-              className="prose prose-sm max-w-none font-body"
-              style={{
-                fontSize: '13px',
-                color: '#2C1810',
-                lineHeight: '1.75',
-              }}
-            >
-              <ReactMarkdown>{mainResponse || entry.response}</ReactMarkdown>
-            </div>
-          </div>
+          {safetyResponse}
         </div>
-
-        {/* 3. SAJAA ASKS - Left-aligned chat bubble (only for turn 1 question) */}
-        {question && entry.turnCount === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <span
-              className="font-body"
-              style={{
-                fontSize: '12px',
-                fontWeight: 500,
-                color: '#C17C74',
-                marginBottom: '6px',
-              }}
-            >
-              Sajaa asks
-            </span>
-            <div
-              style={{
-                maxWidth: '80%',
-                background: '#C17C74',
-                borderRadius: '18px 18px 18px 4px',
-                padding: '14px 18px',
-              }}
-            >
-              <p
-                className="font-body"
-                style={{
-                  fontSize: '13.5px',
-                  color: '#FFFFFF',
-                  lineHeight: '1.7',
-                  margin: 0,
-                }}
-              >
-                {question}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* 4. FOLLOW-UP CONVERSATION THREAD */}
-        {followUpMessages.map((msg, index) => (
-          <div
-            key={index}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
-            }}
-          >
-            {msg.role === 'assistant' && (
-              <span
-                className="font-body"
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  color: '#C17C74',
-                  marginBottom: '6px',
-                }}
-              >
-                Sajaa
-              </span>
-            )}
-            <div
-              style={{
-                maxWidth: '80%',
-                background: msg.role === 'user' ? '#A85E56' : '#C17C74',
-                borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                padding: '14px 18px',
-              }}
-            >
-              <p
-                className="font-body"
-                style={{
-                  fontSize: '13.5px',
-                  color: '#FFFFFF',
-                  lineHeight: '1.7',
-                  margin: 0,
-                  textAlign: msg.role === 'user' ? 'right' : 'left',
-                }}
-              >
-                {msg.content}
-              </p>
-            </div>
-          </div>
-        ))}
-
-        {/* 5. REPLY INPUT AREA (when conversation is active) */}
-        {entry.status === "active" && (
-          <div style={{ marginTop: '8px' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: '#FFFFFF',
-                border: '0.5px solid #E2CFC5',
-                borderRadius: '100px',
-                padding: '10px 16px',
-              }}
-            >
-              <input
-                type="text"
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Reply..."
-                disabled={loading}
-                className="font-body"
-                style={{
-                  flex: 1,
-                  border: 'none',
-                  outline: 'none',
-                  background: 'transparent',
-                  fontSize: '13px',
-                  color: '#2C1810',
-                  fontStyle: 'italic',
-                }}
-              />
-              <button
-                onClick={sendReply}
-                disabled={!replyText.trim() || loading}
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  background: replyText.trim() && !loading ? '#2C1810' : 'rgba(44, 24, 16, 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: 'none',
-                  cursor: replyText.trim() && !loading ? 'pointer' : 'default',
-                  transition: 'background 0.2s ease',
-                }}
-              >
-                {loading ? (
-                  <div
-                    style={{
-                      width: '12px',
-                      height: '12px',
-                      border: '2px solid rgba(253, 246, 240, 0.3)',
-                      borderTopColor: '#FDF6F0',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite',
-                    }}
-                  />
-                ) : (
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke={replyText.trim() ? '#FDF6F0' : 'rgba(44, 24, 16, 0.4)'}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                  </svg>
-                )}
-              </button>
-            </div>
-            <p
-              className="font-body text-center"
-              style={{
-                fontSize: '10px',
-                color: 'rgba(44, 24, 16, 0.45)',
-                marginTop: '10px',
-              }}
-            >
-              {exchangesRemaining} {exchangesRemaining === 1 ? 'exchange' : 'exchanges'} remaining
-            </p>
-            {error && (
-              <p className="text-xs mt-2 text-center" style={{ color: '#A85E56' }}>{error}</p>
-            )}
-            {safetyResponse && (
-              <div
-                className="font-body mt-4"
-                style={{
-                  background: '#FFFAF7',
-                  border: '1px solid #E8D5C8',
-                  borderLeft: '3px solid #A85E56',
-                  borderRadius: '12px',
-                  color: '#2C1810',
-                  fontSize: '13px',
-                  lineHeight: '1.75',
-                  padding: '16px',
-                }}
-              >
-                {safetyResponse}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 6. COMPLETION MESSAGE (when conversation is complete) */}
-        {entry.status === "completed" && (
-          <p
-            className="font-body text-center"
-            style={{
-              fontSize: '13px',
-              fontStyle: 'italic',
-              color: 'rgba(44, 24, 16, 0.6)',
-              marginTop: '16px',
-              marginBottom: '8px',
-            }}
-          >
-            This reflection is complete. Until tomorrow — fi amanillah.
-          </p>
-        )}
-
-        {/* 7. COMPLETED-STATE ACTIONS */}
-        {entry.status === "completed" && (
-          <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button
-              onClick={isAuthenticated ? onViewJournal : onSaveReflection}
-              className="w-full py-3 font-body font-medium transition-all text-center"
-              style={{
-                background: '#2C1810',
-                color: '#FDF6F0',
-                borderRadius: '100px',
-                fontSize: '14px',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              {isAuthenticated ? "View journal" : "Save your reflection"}
-            </button>
-            {!isAuthenticated && (
-              <button
-                onClick={onViewJournal}
-                className="w-full font-body transition-colors text-center"
-                style={{
-                  color: 'rgba(44, 24, 16, 0.45)',
-                  fontSize: '12px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                View journal
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      )}
     </div>
   );
 }

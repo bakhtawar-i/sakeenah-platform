@@ -9,9 +9,7 @@ const EMOTION_ROWS = [
   ["Hopeful", "Grateful", "Peaceful", "Content"],
 ];
 
-const TERRACOTTA_EMOTIONS = ["Worried", "Angry", "Stressed", "Confused"];
-
-const MAX_CHARS = 250;
+const MAX_CHARS = 300;
 
 interface Props {
   onResponse: (entry: JournalEntry) => void;
@@ -37,7 +35,6 @@ export default function HomeScreen({ onResponse }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [safetyResponse, setSafetyResponse] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
 
   const toggleEmotion = (e: string) => {
     setEmotions((prev) => prev.includes(e) ? prev.filter((x) => x !== e) : [...prev, e]);
@@ -107,53 +104,44 @@ export default function HomeScreen({ onResponse }: Props) {
   };
 
   const remaining = MAX_CHARS - thought.length;
-  const hasContent = thought.trim().length > 0;
+  const canSubmit = thought.trim().length > 0 && !loading;
 
   return (
-    <div className="animate-fade-in pt-[36px]">
+    <div className="animate-fade-in pt-6">
 
-      <h2 className="font-display mb-7 text-[28px] min-[420px]:text-[36px]" style={{ fontWeight: 300, fontStyle: 'italic', color: '#2C1810' }}>What's on your mind?</h2>
+      {/* Narrow enough to stay left of the top-right artwork (which starts 129px from the column's right edge). */}
+      <h2 id="home-heading" className="font-display max-w-[min(230px,calc(100%-117px))] text-[30px] font-semibold leading-[1.2] text-maroon">
+        What's on your mind?
+      </h2>
 
       <textarea
         value={thought}
         onChange={(e) => e.target.value.length <= MAX_CHARS && setThought(e.target.value)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        aria-labelledby="home-heading"
+        aria-describedby="home-char-count"
         placeholder="What is on your heart today..."
         rows={5}
-        className="w-full resize-none focus:outline-none font-body"
-        style={{
-          lineHeight: '1.85',
-          fontSize: '15px',
-          background: '#FFFFFF',
-          border: `1px solid ${isFocused || hasContent ? '#C17C74' : '#E8D5C8'}`,
-          borderRadius: '12px',
-          padding: '16px 18px',
-          minHeight: '164px',
-          color: '#2C1810',
-          boxShadow: isFocused || hasContent ? '0 0 0 3px rgba(193, 124, 116, 0.15)' : 'none',
-          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-          fontStyle: !hasContent ? 'italic' : 'normal',
-        }}
+        className="font-body mt-7 block h-[190px] w-full resize-none rounded-[20px] border-[1.5px] border-turquoise bg-white p-[18px] text-[17px] leading-[1.45] text-ink transition-[border-color,box-shadow] duration-200 placeholder:text-[#85666A] focus:border-maroon focus:outline-none focus:ring-[3px] focus:ring-maroon/15"
       />
-      <p className="text-xs mt-1 text-right" style={{ color: remaining < 30 ? '#A85E56' : 'rgba(44, 24, 16, 0.45)' }}>
-        {remaining} characters remaining
+      <p id="home-char-count" className={`mt-2 text-right text-[13px] ${remaining < 30 ? "text-maroon" : "text-clay"}`}>
+        {remaining} {remaining === 1 ? "character" : "characters"} remaining
       </p>
 
-      <p className="font-body text-xs mt-7" style={{ color: 'rgba(44, 24, 16, 0.45)' }}>
+      <p id="home-feelings-label" className="font-body mt-[26px] text-[15px] font-medium text-clay-deep">
         What feels closest right now?
       </p>
 
-      <div className="flex flex-wrap justify-center gap-x-2 gap-y-3 mt-2">
+      <div role="group" aria-labelledby="home-feelings-label" className="mt-3 flex flex-wrap justify-start gap-[10px]">
         {EMOTION_ROWS.map((row) =>
           row.map((e) => {
             const isActive = emotions.includes(e);
-            const isTerracotta = TERRACOTTA_EMOTIONS.includes(e);
             return (
               <button
                 key={e}
+                type="button"
                 onClick={() => toggleEmotion(e)}
-                className={`chip min-w-[104px] px-3 text-center whitespace-nowrap ${isActive ? `chip-active ${isTerracotta ? 'chip-active-terracotta' : 'chip-active-rose'}` : ""}`}
+                aria-pressed={isActive}
+                className={`chip flex h-10 items-center whitespace-nowrap border-[1.5px] px-4 text-[14px] font-normal ${isActive ? "chip-active" : ""}`}
               >
                 {e}
               </button>
@@ -163,40 +151,25 @@ export default function HomeScreen({ onResponse }: Props) {
       </div>
 
       <button
+        type="button"
         onClick={submit}
-        disabled={!thought.trim() || loading}
-        className="w-full mt-7 py-3 rounded-full text-sm font-medium transition-all"
-        style={
-          !thought.trim() || loading
-            ? { background: 'rgba(44, 24, 16, 0.3)', color: 'rgba(253, 246, 240, 0.65)', borderRadius: '100px' }
-            : { background: '#2C1810', color: '#FDF6F0', borderRadius: '100px' }
-        }
+        disabled={!canSubmit}
+        className="mt-11 h-14 w-full rounded-[28px] bg-maroon text-[17px] font-semibold text-cream transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-maroon focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:cursor-not-allowed disabled:opacity-[0.55]"
       >
         {loading ? (
           <span className="animate-pulse-soft">Reflecting...</span>
         ) : (
-          "Submit"
+          "Reflect"
         )}
       </button>
 
-      {error && <p className="text-xs mt-2 text-center" style={{ color: '#A85E56' }}>{error}</p>}
+      {error && <p className="mt-2 text-center text-xs text-maroon">{error}</p>}
       {safetyResponse && (
-        <div
-          className="font-body mt-4"
-          style={{
-            background: '#FFFAF7',
-            border: '1px solid #E8D5C8',
-            borderLeft: '3px solid #A85E56',
-            borderRadius: '12px',
-            color: '#2C1810',
-            fontSize: '13px',
-            lineHeight: '1.75',
-            padding: '16px',
-          }}
-        >
+        <div className="font-body mt-4 rounded-xl border border-l-[3px] border-hairline border-l-maroon bg-white p-4 text-[13px] leading-[1.75] text-ink">
           {safetyResponse}
         </div>
       )}
+
     </div>
   );
 }

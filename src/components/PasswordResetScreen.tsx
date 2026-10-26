@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { resetPassword } from "@/lib/auth";
+import { AUTH_HEADING, AUTH_SUBLINE_NARROW, AuthField, TextLink } from "@/components/auth/AuthParts";
+import { PRIMARY } from "@/components/reflection/styles";
 
 interface Props {
   onBackToSignIn: () => void;
@@ -28,114 +30,48 @@ export default function PasswordResetScreen({ onBackToSignIn }: Props) {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-8"
-      style={{ background: '#1A0F0A' }}
-    >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 50% 20%, rgba(193,124,116,0.10) 0%, transparent 70%)' }}
-      />
+    <div className="animate-fade-in pt-6">
+      <h2 className={AUTH_HEADING}>Reset password</h2>
 
-      <div className="max-w-sm w-full relative z-10 animate-fade-in">
-        <h2
-          className="font-display text-center"
-          style={{ fontSize: '28px', fontWeight: 300, fontStyle: 'italic', color: 'rgba(255, 248, 242, 0.9)', marginBottom: '16px' }}
-        >
-          Reset password
-        </h2>
-
-        {sent ? (
-          <div className="text-center">
-            <p
-              className="font-body"
-              style={{ fontSize: '14px', color: 'rgba(255, 248, 242, 0.40)', lineHeight: '1.8', marginBottom: '32px' }}
-            >
-              If an account exists with{" "}
-              <span style={{ color: 'rgba(255, 248, 242, 0.65)' }}>{email}</span>,
-              you'll receive a password reset link shortly.
+      {sent ? (
+        <>
+          <div className="mt-[30px] rounded-[20px] border border-hairline bg-white px-[22px] py-[26px]">
+            <p role="status" className="break-words text-[16.5px] leading-[1.6] text-ink">
+              If an account exists with <b className="font-semibold">{email}</b>, you'll receive a password reset link shortly.
             </p>
-            <button
-              onClick={onBackToSignIn}
-              className="w-full font-body font-medium"
-              style={{
-                background: '#2C1810',
-                color: '#FDF6F0',
-                borderRadius: '100px',
-                padding: '14px',
-                fontSize: '14px',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              Back to sign in
-            </button>
           </div>
-        ) : (
-          <>
-            <p
-              className="font-body text-center"
-              style={{ fontSize: '14px', color: 'rgba(255, 248, 242, 0.40)', lineHeight: '1.8', marginBottom: '32px' }}
-            >
-              Enter your email and we'll send you a link to reset your password.
-            </p>
-
-            {error && (
-              <p className="font-body text-center" style={{ fontSize: '12px', color: '#C17C74', marginBottom: '16px' }}>
-                {error}
-              </p>
-            )}
-
-            <div style={{ marginBottom: '24px' }}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address"
-                className="w-full font-body"
-                style={{
-                  background: '#FFFFFF',
-                  border: '0.5px solid #E8D5C8',
-                  borderRadius: '12px',
-                  padding: '14px 16px',
-                  fontSize: '14px',
-                  color: '#2C1810',
-                  outline: 'none',
-                }}
-                onFocus={(e) => (e.target.style.borderColor = '#C17C74')}
-                onBlur={(e) => (e.target.style.borderColor = '#E8D5C8')}
-              />
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!email.trim() || loading}
-              className="w-full font-body font-medium"
-              style={{
-                background: !email.trim() || loading ? 'rgba(44, 24, 16, 0.3)' : '#2C1810',
-                color: '#FDF6F0',
-                borderRadius: '100px',
-                padding: '14px',
-                fontSize: '14px',
-                border: 'none',
-                cursor: !email.trim() || loading ? 'default' : 'pointer',
-              }}
-            >
-              {loading ? "Sending..." : "Send reset link"}
-            </button>
-          </>
-        )}
-
-        <p className="text-center" style={{ marginTop: '20px' }}>
-          <button
-            onClick={onBackToSignIn}
-            className="font-body"
-            style={{ fontSize: '13px', color: 'rgba(255, 248, 242, 0.35)', background: 'none', border: 'none', cursor: 'pointer' }}
-          >
+          <button type="button" onClick={onBackToSignIn} className={`mt-[22px] ${PRIMARY}`}>
             Back to sign in
           </button>
-        </p>
-      </div>
+        </>
+      ) : (
+        <form
+          noValidate
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSubmit();
+          }}
+        >
+          <p className={AUTH_SUBLINE_NARROW}>Enter your email and we'll send you a link to reset your password.</p>
+          <AuthField
+            className="mt-[30px]"
+            label="Email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={error || undefined}
+          />
+          <button type="submit" disabled={!email.trim() || loading} className={`mt-[26px] ${PRIMARY}`}>
+            {loading ? "Sending..." : "Send reset link"}
+          </button>
+          <TextLink onClick={onBackToSignIn} className="mt-[18px]">
+            Back to sign in
+          </TextLink>
+        </form>
+      )}
     </div>
   );
 }
